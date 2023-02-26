@@ -30,7 +30,7 @@ public final class Constants {
     public static final double kvVoltSecondsPerMeter = 2.5432;
     public static final double kaVoltSecondsSquaredPerMeter = 0.53875;
   
-    public static final double kPDriveVel = 0;
+    public static final double kPDriveVel = 0; // 3.7176
   
     public static final double kTrackwidthMeters = 0.56;
 
@@ -40,6 +40,8 @@ public final class Constants {
   };
 
   public static class DriveConstants {
+    public static final double kMaxOutput = 12.0;
+
     public static final boolean isLeftInverted = true;
 
     public static final int kLeftBackMotorPort = 4;

@@ -38,6 +38,7 @@ public class Drive extends SubsystemBase {
   *1: Restore factory defaults <p>
   *2: Invert <p>
   *3: Voltage compensations
+  *   @param spark the sparkmax motor controller to be configured.
   */
   public void configureSpark(CANSparkMax spark){
     spark.restoreFactoryDefaults();
@@ -77,8 +78,11 @@ public class Drive extends SubsystemBase {
     m_odometry = new DifferentialDriveOdometry(
       Rotation2d.fromDegrees(m_gyro.getAngle()), 
       m_leftEncoder.getDistance(), 
-      m_rightEncoder.getDistance()
+      m_rightEncoder.getDistance(),
+      new Pose2d()
     );
+
+    setMaxOutput(DriveConstants.kMaxOutput);
   }
 
   /* Drive methods */
@@ -101,7 +105,7 @@ public class Drive extends SubsystemBase {
 
   public void resetEncoders() {m_leftEncoder.reset(); m_rightEncoder.reset();}
 
-  public double getAverageDistance() {return (getDistance()[0] + getDistance()[1] / 2.0);}
+  public double getAverageDistance() {return (getDistance()[0] + getDistance()[1]) / 2.0;}
 
   public void printDistance(){
     SmartDashboard.putNumber("Left encoder", getDistance()[0]);
@@ -126,9 +130,9 @@ public class Drive extends SubsystemBase {
     resetEncoders();
     resetGyro();
     m_odometry.resetPosition(
-      new Rotation2d(),
-      0,
-      0, 
+      Rotation2d.fromDegrees(getAngle()),
+      m_leftEncoder.getDistance(),
+      m_rightEncoder.getDistance(),
       new Pose2d()
     );
   }
@@ -137,9 +141,9 @@ public class Drive extends SubsystemBase {
     resetEncoders();
     resetGyro();
     m_odometry.resetPosition(
-      new Rotation2d(),
-      0.0, 
-      0.0, 
+      Rotation2d.fromDegrees(getAngle()),
+      m_leftEncoder.getDistance(),
+      m_rightEncoder.getDistance(),
       pose
     );
   }
@@ -152,8 +156,7 @@ public class Drive extends SubsystemBase {
 
   public void printPose(){
     var translation = m_odometry.getPoseMeters().getTranslation();
-    SmartDashboard.putNumber("X", translation.getX());
-    SmartDashboard.putNumber("Y", translation.getY());
+    SmartDashboard.putNumberArray("Position", new Double[] {translation.getX(), translation.getY()});
   }
 
   /* Other methods */
@@ -163,7 +166,7 @@ public class Drive extends SubsystemBase {
     printAngle();
     printDistance();
   }
-  
+
   @Override
   public void periodic() {
     m_odometry.update(
