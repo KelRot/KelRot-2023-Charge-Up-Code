@@ -31,31 +31,34 @@ public class RobotContainer {
   private void configureBindings() {
     m_drive.setDefaultCommand(driveCommand);
     JoystickButton debug[] = {
-        new JoystickButton(m_joystick, 1)
+      new JoystickButton(m_joystick, 1)
     };
 
     debug[0].whileTrue(new InstantCommand(() -> m_drive.resetOdometry()));
   }
 
   public Command getAutonomousCommand() {
-    Trajectory autoTrajectory = TrajectoryGenerator.generateTrajectory(
-      Path.StraightLine.kStart,
 
-      Path.StraightLine.kWayPoints,
+    Trajectory autoTrajectory = TrajectoryGenerator.generateTrajectory(
+      Path.S.kStart,
+
+      Path.S.kWayPoints,
       
-      Path.StraightLine.kEnd,
+      Path.S.kEnd,
 
       Path.config
     );
+
+    m_drive.m_field.getObject("traj").setTrajectory(autoTrajectory);
 
 
     RamseteController m_ramseteController = new RamseteController(TrajectoryConstants.kRamseteB, TrajectoryConstants.kRamseteZeta);
     
     /* Debug */
 
-    m_ramseteController.setEnabled(false);
+    //m_ramseteController.setEnabled(false);
 
-    var table = NetworkTableInstance.getDefault().getTable("troubleshooting");
+    var table = NetworkTableInstance.getDefault().getTable("SmartDashboard");
     var leftReference = table.getEntry("left_reference");
     var leftMeasurement = table.getEntry("left_measurement");
     var rightReference = table.getEntry("right_reference");
@@ -88,6 +91,7 @@ public class RobotContainer {
 
         rightMeasurement.setNumber(m_drive.getWheelSpeeds().rightMetersPerSecond);
         rightReference.setNumber(rightController.getSetpoint());
+
       },
       m_drive
     );

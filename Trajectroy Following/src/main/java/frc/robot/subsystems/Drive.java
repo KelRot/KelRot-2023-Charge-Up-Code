@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -8,6 +9,7 @@ import frc.robot.Constants.EncoderConstants;
 import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,8 +24,7 @@ public class Drive extends SubsystemBase {
   private final CANSparkMax m_leftBackMotor, m_leftFrontMotor, m_rightBackMotor, m_rightFrontMotor;
 
 
-  private final Encoder m_leftEncoder;
-  private final Encoder m_rightEncoder;
+  private final Encoder m_leftEncoder, m_rightEncoder;
 
   private final ADIS16470_IMU m_gyro = new ADIS16470_IMU();
 
@@ -32,6 +33,8 @@ public class Drive extends SubsystemBase {
   private final MotorControllerGroup m_leftMotorControllerGroup, m_rightMotorControllerGroup;
 
   private final DifferentialDrive m_drive;
+
+  public final Field2d m_field = new Field2d();
 
   /**
   *Configures spark maxes: <p>
@@ -42,7 +45,8 @@ public class Drive extends SubsystemBase {
   */
   public void configureSpark(CANSparkMax spark){
     spark.restoreFactoryDefaults();
-    spark.enableVoltageCompensation(12.0);
+    spark.enableVoltageCompensation(6.0);
+    spark.setIdleMode(IdleMode.kCoast);
   }
   
   public Drive() {
@@ -75,6 +79,12 @@ public class Drive extends SubsystemBase {
       EncoderConstants.kRightEncoderIsReversed
     );
 
+    m_leftEncoder.setDistancePerPulse(EncoderConstants.kDistancePerPulse);
+    m_rightEncoder.setDistancePerPulse(EncoderConstants.kDistancePerPulse);
+
+    resetEncoders();
+    resetGyro();
+
     m_odometry = new DifferentialDriveOdometry(
       Rotation2d.fromDegrees(m_gyro.getAngle()), 
       m_leftEncoder.getDistance(), 
@@ -83,12 +93,14 @@ public class Drive extends SubsystemBase {
     );
 
     setMaxOutput(DriveConstants.kMaxOutput);
+
+    debug();
   }
 
   /* Drive methods */
 
   public void curvatureDrive(Joystick js) {
-    m_drive.curvatureDrive(js.getRawAxis(1), js.getRawAxis(0) * 0.6, true);
+    m_drive.curvatureDrive(js.getRawAxis(1), -js.getRawAxis(0) * 0.6, true);
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {m_drive.tankDrive(leftVolts, rightVolts);}
@@ -110,6 +122,7 @@ public class Drive extends SubsystemBase {
   public void printDistance(){
     SmartDashboard.putNumber("Left encoder", getDistance()[0]);
     SmartDashboard.putNumber("Right encoder", getDistance()[1]);
+    SmartDashboard.putData("Field", m_field);
   }
 
   /* Gyro methods */
@@ -156,7 +169,8 @@ public class Drive extends SubsystemBase {
 
   public void printPose(){
     var translation = m_odometry.getPoseMeters().getTranslation();
-    SmartDashboard.putNumberArray("Position", new Double[] {translation.getX(), translation.getY()});
+    SmartDashboard.putNumber("X", translation.getX());
+    SmartDashboard.putNumber("Y", translation.getY());
   }
 
   /* Other methods */
@@ -170,11 +184,11 @@ public class Drive extends SubsystemBase {
   @Override
   public void periodic() {
     m_odometry.update(
-      Rotation2d.fromDegrees(-m_gyro.getAngle()), 
+      Rotation2d.fromDegrees(m_gyro.getAngle()), 
       m_leftEncoder.getDistance(), 
       m_rightEncoder.getDistance()
     );
-    debug();
+    m_field.setRobotPose(m_odometry.getPoseMeters());
   }
 
   @Override

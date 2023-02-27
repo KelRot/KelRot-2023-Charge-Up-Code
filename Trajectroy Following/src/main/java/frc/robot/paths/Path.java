@@ -32,11 +32,10 @@ public class Path {
     public static Pose2d kStart = new Pose2d(0, 0, new Rotation2d(0));
     
     public static List<Translation2d> kWayPoints = Arrays.asList(
-      new Translation2d(1, 0), 
-      new Translation2d(2, 0)
+      new Translation2d(1, 0)
     );
     
-    public static Pose2d kEnd = new Pose2d(3, 0, new Rotation2d(0));
+    public static Pose2d kEnd = new Pose2d(2, 0, new Rotation2d(0));
   }
 
   public static class S {
