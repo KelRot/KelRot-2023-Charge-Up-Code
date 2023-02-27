@@ -1,4 +1,5 @@
 package frc.robot.subsystems;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -21,7 +22,7 @@ import edu.wpi.first.wpilibj.Joystick;
 
 
 public class Drive extends SubsystemBase {
-  private final CANSparkMax m_leftBackMotor, m_leftFrontMotor, m_rightBackMotor, m_rightFrontMotor;
+  private final WPI_VictorSPX m_leftBackMotor, m_leftFrontMotor, m_rightBackMotor, m_rightFrontMotor;
 
 
   private final Encoder m_leftEncoder, m_rightEncoder;
@@ -43,17 +44,16 @@ public class Drive extends SubsystemBase {
   *3: Voltage compensations
   *   @param spark the sparkmax motor controller to be configured.
   */
-  public void configureSpark(CANSparkMax spark){
-    spark.restoreFactoryDefaults();
-    spark.enableVoltageCompensation(6.0);
-    spark.setIdleMode(IdleMode.kCoast);
+  public void configureSpark(WPI_VictorSPX victor){
+    victor.configFactoryDefault();
+    victor.configVoltageCompSaturation(6.0);
   }
   
   public Drive() {
-    m_leftFrontMotor = new CANSparkMax(DriveConstants.kLeftFrontMotorPort, MotorType.kBrushed);
-    m_leftBackMotor = new CANSparkMax(DriveConstants.kLeftBackMotorPort, MotorType.kBrushed);
-    m_rightFrontMotor = new CANSparkMax(DriveConstants.kRightFrontMotorPort, MotorType.kBrushed);
-    m_rightBackMotor = new CANSparkMax(DriveConstants.kRightBackMotorPort, MotorType.kBrushed);
+    m_leftFrontMotor = new WPI_VictorSPX(DriveConstants.kLeftFrontMotorPort);
+    m_leftBackMotor = new WPI_VictorSPX(DriveConstants.kLeftBackMotorPort);
+    m_rightFrontMotor = new WPI_VictorSPX(DriveConstants.kRightFrontMotorPort);
+    m_rightBackMotor = new WPI_VictorSPX(DriveConstants.kRightBackMotorPort);
 
     configureSpark(m_leftFrontMotor);
     configureSpark(m_leftBackMotor);
@@ -64,6 +64,7 @@ public class Drive extends SubsystemBase {
     m_rightMotorControllerGroup = new MotorControllerGroup(m_rightFrontMotor, m_rightBackMotor);
 
     m_leftMotorControllerGroup.setInverted(DriveConstants.isLeftInverted);
+    m_rightMotorControllerGroup.setInverted(DriveConstants.isRightInverted);
 
     m_drive = new DifferentialDrive(m_leftMotorControllerGroup, m_rightMotorControllerGroup);
 

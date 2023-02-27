@@ -49,4 +49,3 @@ public class Path {
     public static Pose2d kEnd = new Pose2d(3, 0, new Rotation2d(0));
   }
 }
-

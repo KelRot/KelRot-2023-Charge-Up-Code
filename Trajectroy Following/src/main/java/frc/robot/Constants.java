@@ -40,6 +40,7 @@ public final class Constants {
     public static final double kMaxOutput = 12.0;
 
     public static final boolean isLeftInverted = true;
+    public static final boolean isRightInverted = false;
 
     public static final int kLeftBackMotorPort = 4;
     public static final int kLeftFrontMotorPort = 2;
