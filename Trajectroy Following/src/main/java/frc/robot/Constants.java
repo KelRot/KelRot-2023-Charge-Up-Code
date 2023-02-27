@@ -8,7 +8,7 @@ public final class Constants {
   }
 
   public static class EncoderConstants {
-    public static final double kDistancePerPulse = 1.0/2048.0;
+    public static final double kDistancePerPulse = 0.1525 * Math.PI * 1.0/1024.0;
 
     public static final int[] kLeftEncoderPorts = {0, 1};
     public static final boolean kLeftEncoderIsReversed = false;
