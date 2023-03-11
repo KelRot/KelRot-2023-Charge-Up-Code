@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxRelativeEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
@@ -17,15 +19,14 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 
 
 public class Drive extends SubsystemBase {
-  private final WPI_VictorSPX m_leftBackMotor, m_leftFrontMotor, m_rightBackMotor, m_rightFrontMotor;
+  private final CANSparkMax m_leftBackMotor, m_leftFrontMotor, m_rightBackMotor, m_rightFrontMotor;
 
-
-  private final Encoder m_leftEncoder, m_rightEncoder;
+  private RelativeEncoder m_leftEncoder, m_rightEncoder;
 
   private final ADIS16470_IMU m_gyro = new ADIS16470_IMU();
 
@@ -37,6 +38,11 @@ public class Drive extends SubsystemBase {
 
   public final Field2d m_field = new Field2d();
 
+  private final double set_point = 120.0; 
+
+  private boolean m_state; // charging station all state
+  private boolean m_isOnCharging; // is on charging station
+
   /**
   *Configures spark maxes: <p>
   *1: Restore factory defaults <p>
@@ -44,16 +50,24 @@ public class Drive extends SubsystemBase {
   *3: Voltage compensations
   *   @param spark the sparkmax motor controller to be configured.
   */
-  public void configureSpark(WPI_VictorSPX victor){
-    victor.configFactoryDefault();
-    victor.configVoltageCompSaturation(6.0);
+  public void configureSpark(CANSparkMax spark){
+    spark.restoreFactoryDefaults();
+    spark.enableVoltageCompensation(12.0);
+  }
+
+  public void configureEncoder(RelativeEncoder encoder, boolean isLeft){
+    encoder.setPositionConversionFactor(EncoderConstants.kWheelC);
+    encoder.setVelocityConversionFactor(EncoderConstants.kWheelC / 60.0);
+    encoder.setMeasurementPeriod(10);
+    encoder.setInverted(!isLeft);
+    encoder.setPosition(set_point);
   }
   
   public Drive() {
-    m_leftFrontMotor = new WPI_VictorSPX(DriveConstants.kLeftFrontMotorPort);
-    m_leftBackMotor = new WPI_VictorSPX(DriveConstants.kLeftBackMotorPort);
-    m_rightFrontMotor = new WPI_VictorSPX(DriveConstants.kRightFrontMotorPort);
-    m_rightBackMotor = new WPI_VictorSPX(DriveConstants.kRightBackMotorPort);
+    m_leftFrontMotor = new CANSparkMax(DriveConstants.kLeftFrontMotorPort, MotorType.kBrushed);
+    m_leftBackMotor = new CANSparkMax(DriveConstants.kLeftBackMotorPort, MotorType.kBrushed);
+    m_rightFrontMotor = new CANSparkMax(DriveConstants.kRightFrontMotorPort, MotorType.kBrushed);
+    m_rightBackMotor = new CANSparkMax(DriveConstants.kRightBackMotorPort, MotorType.kBrushed);
 
     configureSpark(m_leftFrontMotor);
     configureSpark(m_leftBackMotor);
@@ -68,61 +82,103 @@ public class Drive extends SubsystemBase {
 
     m_drive = new DifferentialDrive(m_leftMotorControllerGroup, m_rightMotorControllerGroup);
 
-    m_leftEncoder = new Encoder(
-      EncoderConstants.kLeftEncoderPorts[0],
-      EncoderConstants.kLeftEncoderPorts[1],
-      EncoderConstants.kLeftEncoderIsReversed
-    );
+    m_leftEncoder = m_leftFrontMotor.getEncoder(SparkMaxRelativeEncoder.Type.kQuadrature, EncoderConstants.kCountsPerRev);
+    m_rightEncoder = m_rightBackMotor.getEncoder(SparkMaxRelativeEncoder.Type.kQuadrature, EncoderConstants.kCountsPerRev);
+    configureEncoder(m_leftEncoder, true);
+    configureEncoder(m_rightEncoder, false);
 
-    m_rightEncoder = new Encoder(
-      EncoderConstants.kRightEncoderPorts[0],
-      EncoderConstants.kRightEncoderPorts[1],
-      EncoderConstants.kRightEncoderIsReversed
-    );
-
-    m_leftEncoder.setDistancePerPulse(EncoderConstants.kDistancePerPulse);
-    m_rightEncoder.setDistancePerPulse(EncoderConstants.kDistancePerPulse);
-
-    resetEncoders();
     resetGyro();
 
     m_odometry = new DifferentialDriveOdometry(
       Rotation2d.fromDegrees(m_gyro.getAngle()), 
-      m_leftEncoder.getDistance(), 
-      m_rightEncoder.getDistance(),
+      0,
+      0,
       new Pose2d()
     );
 
     setMaxOutput(DriveConstants.kMaxOutput);
+    setSparkMode(IdleMode.kCoast);
+
+    m_state = m_isOnCharging = false;
 
     debug();
   }
 
   /* Drive methods */
 
-  public void curvatureDrive(Joystick js) {
-    m_drive.curvatureDrive(js.getRawAxis(1), -js.getRawAxis(0) * 0.6, true);
+  public void drive(Joystick js) {
+    if(m_state == false){
+      m_drive.curvatureDrive(-js.getRawAxis(1), js.getRawAxis(0) * 0.5, true);
+    }else{
+      if(m_isOnCharging == false){
+        tankDriveVolts(3, 3);
+        if(Math.abs(getAngle()) >= 14.0){
+          m_isOnCharging = true;
+        }
+      }else{
+        if(getAngle() <= 14.0 || getAngle() >= 346.0){
+          tankDriveVolts(0, 0);
+          setSparkMode(IdleMode.kBrake);
+        }else{
+          tankDriveVolts(-3.5, -3.5);
+        }
+      }
+    }
   }
-
-  public void tankDriveVolts(double leftVolts, double rightVolts) {m_drive.tankDrive(leftVolts, rightVolts);}
+  public void tankDriveVolts(double leftVolts, double rightVolts) {
+    m_leftMotorControllerGroup.setVoltage(leftVolts);
+    m_rightMotorControllerGroup.setVoltage(rightVolts);
+    feed();
+  }
 
   public void stopMotors() {m_drive.stopMotor();}
 
-  public void setMaxOutput(double maxOutput) {m_drive.setMaxOutput(maxOutput);}
 
   public void feed() {m_drive.feed();}
 
+  public void setMaxOutput(double kMaxSpeed){
+    m_drive.setMaxOutput(kMaxSpeed);
+    m_leftBackMotor.enableVoltageCompensation(kMaxSpeed);
+    m_leftFrontMotor.enableVoltageCompensation(kMaxSpeed);
+    m_rightFrontMotor.enableVoltageCompensation(kMaxSpeed);
+    m_rightBackMotor.enableVoltageCompensation(kMaxSpeed);
+  }
+
+  public void changeState(){
+    m_state = !m_state;
+    if(m_state == false){
+      setSparkMode(IdleMode.kCoast);
+      m_gyro.setYawAxis(IMUAxis.kZ);
+      resetGyro();
+      m_isOnCharging = false;
+    }else{
+      m_gyro.setYawAxis(IMUAxis.kY);
+      resetGyro();
+    }
+  }
+
+  public void setSparkMode(IdleMode mode){
+    m_leftBackMotor.setIdleMode(mode);
+    m_leftFrontMotor.setIdleMode(mode);
+    m_rightFrontMotor.setIdleMode(mode);
+    m_rightBackMotor.setIdleMode(mode);
+  }
   /* Encoder methods */
+  public double map(double x){
+    return x - set_point;
+  }
 
-  public double[] getDistance() {return new double[] {m_leftEncoder.getDistance(), m_rightEncoder.getDistance()};}
+  public double[] getDistance() {return new double[] {map(m_leftEncoder.getPosition()), map(m_rightEncoder.getPosition())};}
 
-  public void resetEncoders() {m_leftEncoder.reset(); m_rightEncoder.reset();}
+  public void resetEncoders() {m_leftEncoder.setPosition(set_point); m_rightEncoder.setPosition(set_point);}
 
   public double getAverageDistance() {return (getDistance()[0] + getDistance()[1]) / 2.0;}
 
   public void printDistance(){
     SmartDashboard.putNumber("Left encoder", getDistance()[0]);
     SmartDashboard.putNumber("Right encoder", getDistance()[1]);
+    SmartDashboard.putNumber("Left Velocity", m_leftEncoder.getVelocity());
+    SmartDashboard.putNumber("Right Velocity", m_rightEncoder.getVelocity());
     SmartDashboard.putData("Field", m_field);
   }
 
@@ -136,7 +192,13 @@ public class Drive extends SubsystemBase {
 
   public double getTurnRate() {return -m_gyro.getRate();}
 
-  public void printAngle() {SmartDashboard.putNumber("Gyro Angle", m_gyro.getAngle());}
+  public void printAngle() {
+    SmartDashboard.putNumber("Gyro Angle", m_gyro.getAngle());
+    if(m_state)
+      SmartDashboard.putString("Gyro State", "y axis");
+    else
+      SmartDashboard.putString("Gyro State", "z axis");
+  }
 
   /* Odometry methods */
 
@@ -145,8 +207,8 @@ public class Drive extends SubsystemBase {
     resetGyro();
     m_odometry.resetPosition(
       Rotation2d.fromDegrees(getAngle()),
-      m_leftEncoder.getDistance(),
-      m_rightEncoder.getDistance(),
+      0,
+      0,
       new Pose2d()
     );
   }
@@ -156,14 +218,14 @@ public class Drive extends SubsystemBase {
     resetGyro();
     m_odometry.resetPosition(
       Rotation2d.fromDegrees(getAngle()),
-      m_leftEncoder.getDistance(),
-      m_rightEncoder.getDistance(),
+      0,
+      0,
       pose
     );
   }
 
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-    return new DifferentialDriveWheelSpeeds(m_leftEncoder.getRate(), m_rightEncoder.getRate());
+    return new DifferentialDriveWheelSpeeds(m_leftEncoder.getVelocity(), m_rightEncoder.getVelocity());
   }
 
   public Pose2d getPose() {return m_odometry.getPoseMeters();}
@@ -186,10 +248,11 @@ public class Drive extends SubsystemBase {
   public void periodic() {
     m_odometry.update(
       Rotation2d.fromDegrees(m_gyro.getAngle()), 
-      m_leftEncoder.getDistance(), 
-      m_rightEncoder.getDistance()
+      getDistance()[0],
+      getDistance()[1]
     );
     m_field.setRobotPose(m_odometry.getPoseMeters());
+    debug();
   }
 
   @Override

@@ -8,12 +8,11 @@ public final class Constants {
   }
 
   public static class EncoderConstants {
-    public static final double kDistancePerPulse = 0.1525 * Math.PI * 1.0/1024.0;
+    public static final double kWheelC = 0.1525 * Math.PI;
 
-    public static final int[] kLeftEncoderPorts = {0, 1};
-    public static final boolean kLeftEncoderIsReversed = false;
-    public static final int[] kRightEncoderPorts = {8, 7};
-    public static final boolean kRightEncoderIsReversed = false;
+    public static final int kCountsPerRev = 4096;
+
+    public static final boolean kIsLeftInverted = false;
   }                                   
 
   public static class TrajectoryConstants{
@@ -23,13 +22,13 @@ public final class Constants {
     public static final double kRamseteB = 2;
     public static final double kRamseteZeta = 0.7;
 
-    public static final double ksVolts = 0.63579; //90835
-    public static final double kvVoltSecondsPerMeter = 2.6171;
-    public static final double kaVoltSecondsSquaredPerMeter = 0.59256;
+    public static final double ksVolts = 0.9102; // 0.67319
+    public static final double kvVoltSecondsPerMeter = 2.3049;
+    public static final double kaVoltSecondsSquaredPerMeter = 0.5; //1.3519
   
-    public static final double kPDriveVel = 3.7176; // 3.7176
+    public static final double kPDriveVel = 0; // 0.70093
   
-    public static final double kTrackwidthMeters = 0.56;
+    public static final double kTrackwidthMeters = 0.57;
 
     public static final double kMaxVoltage = 10.0;
 
@@ -37,14 +36,22 @@ public final class Constants {
   };
 
   public static class DriveConstants {
-    public static final double kMaxOutput = 12.0;
+    public static final double kMaxOutput = 10.0;
 
-    public static final boolean isLeftInverted = true;
-    public static final boolean isRightInverted = false;
+    public static final boolean isLeftInverted = false; 
+    public static final boolean isRightInverted = true;
 
-    public static final int kLeftBackMotorPort = 4;
-    public static final int kLeftFrontMotorPort = 2;
-    public static final int kRightBackMotorPort = 1;
+    public static final int kLeftBackMotorPort = 1;
+    public static final int kLeftFrontMotorPort = 4;
+    public static final int kRightBackMotorPort = 2;  
     public static final int kRightFrontMotorPort = 3;
+
+    public static final double kChargingStationAngle = 15.0;
+  }
+
+  public static class PneumaticsConstants {
+    public static final int[] kArmPins = {5, 2};
+    public static final int[] kTelescopePins = {7, 0};
+    public static final int[] kIntakePins = {1, 6};
   }
 }

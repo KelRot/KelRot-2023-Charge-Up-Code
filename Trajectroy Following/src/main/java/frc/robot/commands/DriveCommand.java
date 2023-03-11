@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import frc.robot.subsystems.Drive;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class DriveCommand extends CommandBase {
@@ -23,7 +24,7 @@ public class DriveCommand extends CommandBase {
 
   @Override
   public void execute() {
-    m_drive.curvatureDrive(m_joystick);
+    m_drive.drive(m_joystick);
     m_drive.debug();
   }
 
