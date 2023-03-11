@@ -8,7 +8,6 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Pneumatics;
 import frc.robot.subsystems.Pulley;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -76,9 +75,9 @@ public class RobotContainer {
     button[1].onTrue(m_fullOpenCommand);
     button[2].onTrue(m_fullCloseCommand);
     button[3].whileTrue(new InstantCommand(() -> m_pneumatics.getIntakeSolenoid().toggle()));
-    /*button[4].whileTrue(new InstantCommand(() -> m_drive.setMaxOutput(4.0)));
+    button[4].whileTrue(new InstantCommand(() -> m_drive.setMaxOutput(4.0)));
     button[5].whileTrue(new InstantCommand(() -> m_drive.setMaxOutput(8.0)));
-    button[6].whileTrue(new InstantCommand(() -> m_drive.setMaxOutput(12.0)));*/
+    button[6].whileTrue(new InstantCommand(() -> m_drive.setMaxOutput(12.0)));
     button[7].whileTrue(new InstantCommand(() -> m_drive.changeState()));
     button[8].whileTrue(new InstantCommand(() -> m_drive.resetOdometry()));
   }
@@ -86,13 +85,13 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
 
     Trajectory autoTrajectory = TrajectoryGenerator.generateTrajectory(
-      P.StraightLine.kStart,
+      P.auto21.kStart,
 
-      P.StraightLine.kWayPoints,
+      P.auto21.kWayPoints,
       
-      P.StraightLine.kEnd,
+      P.auto21.kEnd,
 
-      P.config
+      P.auto21.kConfig
     );
 
     m_drive.m_field.getObject("traj").setTrajectory(autoTrajectory);

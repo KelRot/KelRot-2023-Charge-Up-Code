@@ -20,7 +20,6 @@ import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
 
 
 public class Drive extends SubsystemBase {
@@ -190,7 +189,7 @@ public class Drive extends SubsystemBase {
 
   public void setGyroAxis(IMUAxis yaw_axis) {m_gyro.setYawAxis(yaw_axis);}
 
-  public double getTurnRate() {return -m_gyro.getRate();}
+  public double getTurnRate() {return m_gyro.getRate();}
 
   public void printAngle() {
     SmartDashboard.putNumber("Gyro Angle", m_gyro.getAngle());

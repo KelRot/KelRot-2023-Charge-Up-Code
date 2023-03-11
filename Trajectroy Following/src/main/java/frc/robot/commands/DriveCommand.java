@@ -2,11 +2,9 @@ package frc.robot.commands;
 
 import frc.robot.subsystems.Drive;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class DriveCommand extends CommandBase {
-  @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
   private final Drive m_drive;
   private final Joystick m_joystick;
 
@@ -25,7 +23,6 @@ public class DriveCommand extends CommandBase {
   @Override
   public void execute() {
     m_drive.drive(m_joystick);
-    m_drive.debug();
   }
 
   @Override
