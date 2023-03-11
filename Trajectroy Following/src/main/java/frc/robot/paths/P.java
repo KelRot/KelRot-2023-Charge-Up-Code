@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.Constants.TrajectoryConstants;
 
 public class P {
-  private static final DifferentialDriveVoltageConstraint autoVoltageConstraint = new DifferentialDriveVoltageConstraint(
+  private static final DifferentialDriveVoltageConstraint voltageConstraint = new DifferentialDriveVoltageConstraint(
     new SimpleMotorFeedforward(
       TrajectoryConstants.ksVolts,
       TrajectoryConstants.kvVoltSecondsPerMeter,
@@ -32,54 +32,55 @@ public class P {
     TrajectoryConstants.kMaxSpeedMetersPerSecond,
     TrajectoryConstants.kMaxAccelerationMetersPerSecondSquared)
     .setKinematics(TrajectoryConstants.kDriveKinematics)
-    .addConstraint(autoVoltageConstraint);
+    .addConstraint(voltageConstraint);
 
-  // 21 Point path
 
-  public Trajectory traj21 = new Trajectory();
-  String trajectoryJSON = "pathplanner/generatedJSON/path21.wpilib.json";
-  Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
+  public static class Path{
+    public Pose2d kStart;
+    public List<Translation2d> kWayPoints;
+    public Pose2d kEnd;
+    public TrajectoryConfig kConfig;
 
-  public P(){
-    try {
-      Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
-      traj21 = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
-    } catch (IOException ex) {
-      DriverStation.reportError("Unable to open trajectory: " + trajectoryJSON, ex.getStackTrace());
+    public Path(Pose2d start, List<Translation2d> wayPoints, Pose2d end, boolean startReversed){
+      kStart = start;
+      kWayPoints = wayPoints;
+      kEnd = end;
+      kConfig = config;
+      kConfig.setReversed(startReversed);
     }
   }
 
-  /////////////////
+  public static Path straightLine, S, auto21;
 
-  public static class StraightLine {
-    public static Pose2d kStart = new Pose2d(0, 0, new Rotation2d(0));
-    
-    public static List<Translation2d> kWayPoints = Arrays.asList(
-      new Translation2d(1, 0),
-      new Translation2d(2, 0.5)
+  public P(){
+    straightLine = new Path(
+      new Pose2d(0, 0, new Rotation2d(0)), 
+      Arrays.asList(
+        new Translation2d(1, 0),
+        new Translation2d(2, 0)
+      ),
+      new Pose2d(3, 0, new Rotation2d(0)),
+      false 
     );
-    
-    public static Pose2d kEnd = new Pose2d(3, 1, new Rotation2d(0));
+
+    S = new Path(
+      new Pose2d(0, 0, new Rotation2d(0)), 
+      Arrays.asList(
+        new Translation2d(1, 1),
+        new Translation2d(2, -1)
+      ),
+      new Pose2d(3, 0, new Rotation2d(0)),
+      false 
+    );
+
+    auto21 = new Path(
+      new Pose2d(0, 0, new Rotation2d(0)), 
+      Arrays.asList(
+        new Translation2d(5, 0)
+      ),
+      new Pose2d(5, 1.6, new Rotation2d(0)),
+      true
+    );
   }
 
-  public static class S {
-    public static Pose2d kStart = new Pose2d(0, 0, new Rotation2d(0));
-    
-    public static List<Translation2d> kWayPoints = Arrays.asList(
-      new Translation2d(1, 0.5), 
-      new Translation2d(2, -0.5)
-    );
-    
-    public static Pose2d kEnd = new Pose2d(3, 0, new Rotation2d(0));
-  }
-
-  public static class Otonom21 {
-    public static Pose2d kStart = new Pose2d(0, 0, new Rotation2d(0));
-    
-    public static List<Translation2d> kWayPoints = Arrays.asList(
-      new Translation2d(5, 1)
-    );
-    
-    public static Pose2d kEnd = new Pose2d(5, -1.6, new Rotation2d(0));
-  }
 }
