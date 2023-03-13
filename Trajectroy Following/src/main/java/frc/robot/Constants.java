@@ -72,6 +72,7 @@ public final class Constants {
 
     public static final double kCloseStateLength = 0.0;
     public static final double kOpenStateLength = 0.0;
+    public static final double kHalfStateLength = 0.0;
     public static final double kTolerance = 0.0;
 
     public static final double kTime = 0.0;

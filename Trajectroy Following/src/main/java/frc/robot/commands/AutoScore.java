@@ -21,7 +21,7 @@ public class AutoScore extends CommandBase {
   @Override
   public void initialize() {
     m_pneumatics.getArmSolenoid().open();
-    m_pulley.openState();
+    m_pulley.set(PulleyConstants.kOpenStateLength);
     m_timer.reset();
     m_timer.start();
     m_finished = false;
