@@ -13,9 +13,16 @@ public final class Constants {
     public static final int kCountsPerRev = 4096;
 
     public static final boolean kIsLeftInverted = false;
+
+    public static final int kLeftA = 0;
+    public static final int kLeftB = 0;
+    public static final int kRightA = 0;
+    public static final int kRightB = 0;
+
   }                                   
 
   public static class TrajectoryConstants{
+
     public static final double kMaxSpeedMetersPerSecond = 3;
     public static final double kMaxAccelerationMetersPerSecondSquared = 1;
     
@@ -53,5 +60,11 @@ public final class Constants {
     public static final int[] kArmPins = {5, 2};
     public static final int[] kTelescopePins = {7, 0};
     public static final int[] kIntakePins = {1, 6};
+  }
+
+  public static class ChargingConstants {
+    public static final double kP = 0.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
   }
 }
