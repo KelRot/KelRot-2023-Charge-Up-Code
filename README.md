@@ -6,7 +6,7 @@ Team 5655's 2023 FRC robot code for Charged Up. This code is written in Java and
 
 This code includes handling of mechanisms such as pneumatics with double solenoids, tank drive base, pulley system and implements ramsete command, custom classes, voltage control in drive, odometry tracking, triggers and much more...
 
-To run this code, use ```git clone ``` to clone the repo and open the project folder with WPILIB 2023. <br>
+To run this code, use ```git clone``` to clone the repo and open the project folder with WPILIB 2023. <br>
 You should install rev's vendor library in order to compile and deploy. ```https://software-metadata.revrobotics.com/REVLib-2023.json```
 
 ## Code Highlights
