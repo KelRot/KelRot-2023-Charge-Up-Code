@@ -19,13 +19,14 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 
 
 public class Drive extends SubsystemBase {
   private final CANSparkMax m_leftBackMotor, m_leftFrontMotor, m_rightBackMotor, m_rightFrontMotor;
 
-  private RelativeEncoder m_leftEncoder, m_rightEncoder;
+  private Encoder m_leftEncoder, m_rightEncoder;
 
   private final ADIS16470_IMU m_gyro = new ADIS16470_IMU();
 
@@ -54,12 +55,9 @@ public class Drive extends SubsystemBase {
     spark.enableVoltageCompensation(12.0);
   }
 
-  public void configureEncoder(RelativeEncoder encoder, boolean isLeft){
-    encoder.setPositionConversionFactor(EncoderConstants.kWheelC);
-    encoder.setVelocityConversionFactor(EncoderConstants.kWheelC / 60.0);
-    encoder.setMeasurementPeriod(10);
-    encoder.setInverted(!isLeft);
-    encoder.setPosition(set_point);
+  public void configureEncoder(Encoder encoder, boolean isInverted){
+    encoder.setDistancePerPulse(EncoderConstants.kWheelC * EncoderConstants.kCountsPerRev / 4);
+    encoder.setReverseDirection(isInverted);
   }
   
   public Drive() {
@@ -81,8 +79,8 @@ public class Drive extends SubsystemBase {
 
     m_drive = new DifferentialDrive(m_leftMotorControllerGroup, m_rightMotorControllerGroup);
 
-    m_leftEncoder = m_leftFrontMotor.getEncoder(SparkMaxRelativeEncoder.Type.kQuadrature, EncoderConstants.kCountsPerRev);
-    m_rightEncoder = m_rightBackMotor.getEncoder(SparkMaxRelativeEncoder.Type.kQuadrature, EncoderConstants.kCountsPerRev);
+    m_leftEncoder = new Encoder(EncoderConstants.kLeftA, EncoderConstants.kLeftB);
+    m_rightEncoder = new Encoder(EncoderConstants.kRightA, EncoderConstants.kRightB);
     configureEncoder(m_leftEncoder, true);
     configureEncoder(m_rightEncoder, false);
 
@@ -167,17 +165,17 @@ public class Drive extends SubsystemBase {
     return x - set_point;
   }
 
-  public double[] getDistance() {return new double[] {map(m_leftEncoder.getPosition()), map(m_rightEncoder.getPosition())};}
+  public double[] getDistance() {return new double[] {m_leftEncoder.getDistance(), m_rightEncoder.getDistance()};}
 
-  public void resetEncoders() {m_leftEncoder.setPosition(set_point); m_rightEncoder.setPosition(set_point);}
+  public void resetEncoders() {m_leftEncoder.reset(); m_rightEncoder.reset();}
 
   public double getAverageDistance() {return (getDistance()[0] + getDistance()[1]) / 2.0;}
 
   public void printDistance(){
     SmartDashboard.putNumber("Left encoder", getDistance()[0]);
     SmartDashboard.putNumber("Right encoder", getDistance()[1]);
-    SmartDashboard.putNumber("Left Velocity", m_leftEncoder.getVelocity());
-    SmartDashboard.putNumber("Right Velocity", m_rightEncoder.getVelocity());
+    SmartDashboard.putNumber("Left Velocity", m_leftEncoder.getRate());
+    SmartDashboard.putNumber("Right Velocity", m_rightEncoder.getRate());
     SmartDashboard.putData("Field", m_field);
   }
 
@@ -224,7 +222,7 @@ public class Drive extends SubsystemBase {
   }
 
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-    return new DifferentialDriveWheelSpeeds(m_leftEncoder.getVelocity(), m_rightEncoder.getVelocity());
+    return new DifferentialDriveWheelSpeeds(m_leftEncoder.getRate(), m_rightEncoder.getRate());
   }
 
   public Pose2d getPose() {return m_odometry.getPoseMeters();}
