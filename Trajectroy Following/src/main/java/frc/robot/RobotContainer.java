@@ -59,7 +59,9 @@ public class RobotContainer {
       new JoystickButton(m_joystick, 2), // middle sparks
       new JoystickButton(m_joystick, 3), // fast sparks   
       new JoystickButton(m_joystick, 4), // brake mode toggle
-      new JoystickButton(m_joystick, 7) // odometry button
+      new JoystickButton(m_joystick, 7), // odometry button
+      new JoystickButton(m_joystick, 8), // charging run
+      new JoystickButton(m_joystick, 9) // charging stop
     };
 
     JoystickButton byHand[] = {
@@ -93,6 +95,11 @@ public class RobotContainer {
     
     /* reset odometry */
     button[8].whileTrue(new InstantCommand(() -> m_drive.resetOdometry()));
+
+    
+    button[9].debounce(0.5).onTrue(m_chargingStation);
+    button[10].debounce(0.5).onTrue(new InstantCommand(() -> m_chargingStation.cancel()));
+    
   }
 
   public Command getAutonomousCommand() {

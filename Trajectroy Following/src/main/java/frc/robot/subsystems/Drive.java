@@ -121,6 +121,10 @@ public class Drive extends SubsystemBase {
     m_rightBackMotor.enableVoltageCompensation(kMaxSpeed);
   }
 
+  public double getMaxOutput() {
+    return m_leftFrontMotor.getVoltageCompensationNominalVoltage();
+  }
+
   public void changeIdleMode(){
     m_brake = !m_brake;
     if(m_brake == false){
