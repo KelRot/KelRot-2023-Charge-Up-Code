@@ -12,12 +12,10 @@ public final class Constants {
 
     public static final int kCountsPerRev = 4096;
 
-    public static final boolean kIsLeftInverted = false;
-
-    public static final int kLeftA = 0;
-    public static final int kLeftB = 0;
-    public static final int kRightA = 0;
-    public static final int kRightB = 0;
+    public static final int kLeftA = 2;
+    public static final int kLeftB = 1;
+    public static final int kRightA = 3;
+    public static final int kRightB = 4;
 
   }                                   
 
@@ -66,5 +64,17 @@ public final class Constants {
     public static final double kP = 0.0;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
+  }
+
+  public static class PulleyConstants{
+    public static final int kA = 0;
+    public static final int kB = 9;
+
+    public static final double kCloseStateLength = 0.0;
+    public static final double kOpenStateLength = 0.0;
+    public static final double kTolerance = 0.0;
+
+    public static final double kTime = 0.0;
+    public static final double kTelescopeToIntake = 0.7;
   }
 }

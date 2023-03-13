@@ -43,6 +43,9 @@ public class Pneumatics extends SubsystemBase {
       m_state = false;
       debug();
     }
+    public boolean getState(){
+      return m_state;
+    }
     private void debug(){
       SmartDashboard.putBoolean(m_name, m_state);
     }

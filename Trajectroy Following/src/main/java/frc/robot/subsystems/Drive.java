@@ -1,8 +1,6 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxRelativeEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
@@ -38,10 +36,7 @@ public class Drive extends SubsystemBase {
 
   public final Field2d m_field = new Field2d();
 
-  private final double set_point = 120.0; 
-
-  private boolean m_state; // charging station all state
-  private boolean m_isOnCharging; // is on charging station
+  private boolean m_brake; // is brake mode
 
   /**
   *Configures spark maxes: <p>
@@ -88,15 +83,15 @@ public class Drive extends SubsystemBase {
 
     m_odometry = new DifferentialDriveOdometry(
       Rotation2d.fromDegrees(m_gyro.getAngle()), 
-      0,
-      0,
+      getDistance()[0],
+      getDistance()[1],
       new Pose2d()
     );
 
     setMaxOutput(DriveConstants.kMaxOutput);
     setSparkMode(IdleMode.kCoast);
 
-    m_state = m_isOnCharging = false;
+    m_brake = false;
 
     debug();
   }
@@ -104,24 +99,9 @@ public class Drive extends SubsystemBase {
   /* Drive methods */
 
   public void drive(Joystick js) {
-    if(m_state == false){
-      m_drive.curvatureDrive(-js.getRawAxis(1), js.getRawAxis(0) * 0.5, true);
-    }else{
-      if(m_isOnCharging == false){
-        tankDriveVolts(3, 3);
-        if(Math.abs(getAngle()) >= 14.0){
-          m_isOnCharging = true;
-        }
-      }else{
-        if(getAngle() <= 14.0 || getAngle() >= 346.0){
-          tankDriveVolts(0, 0);
-          setSparkMode(IdleMode.kBrake);
-        }else{
-          tankDriveVolts(-3.5, -3.5);
-        }
-      }
-    }
+    m_drive.curvatureDrive(-js.getRawAxis(1), js.getRawAxis(0) * 0.5, true);
   }
+
   public void tankDriveVolts(double leftVolts, double rightVolts) {
     m_leftMotorControllerGroup.setVoltage(leftVolts);
     m_rightMotorControllerGroup.setVoltage(rightVolts);
@@ -141,16 +121,12 @@ public class Drive extends SubsystemBase {
     m_rightBackMotor.enableVoltageCompensation(kMaxSpeed);
   }
 
-  public void changeState(){
-    m_state = !m_state;
-    if(m_state == false){
+  public void changeIdleMode(){
+    m_brake = !m_brake;
+    if(m_brake == false){
       setSparkMode(IdleMode.kCoast);
-      m_gyro.setYawAxis(IMUAxis.kZ);
-      resetGyro();
-      m_isOnCharging = false;
     }else{
-      m_gyro.setYawAxis(IMUAxis.kY);
-      resetGyro();
+      setSparkMode(IdleMode.kBrake);
     }
   }
 
@@ -161,10 +137,6 @@ public class Drive extends SubsystemBase {
     m_rightBackMotor.setIdleMode(mode);
   }
   /* Encoder methods */
-  public double map(double x){
-    return x - set_point;
-  }
-
   public double[] getDistance() {return new double[] {m_leftEncoder.getDistance(), m_rightEncoder.getDistance()};}
 
   public void resetEncoders() {m_leftEncoder.reset(); m_rightEncoder.reset();}
@@ -191,10 +163,6 @@ public class Drive extends SubsystemBase {
 
   public void printAngle() {
     SmartDashboard.putNumber("Gyro Angle", m_gyro.getAngle());
-    if(m_state)
-      SmartDashboard.putString("Gyro State", "y axis");
-    else
-      SmartDashboard.putString("Gyro State", "z axis");
   }
 
   /* Odometry methods */
@@ -204,8 +172,8 @@ public class Drive extends SubsystemBase {
     resetGyro();
     m_odometry.resetPosition(
       Rotation2d.fromDegrees(getAngle()),
-      0,
-      0,
+      getDistance()[0],
+      getDistance()[1],
       new Pose2d()
     );
   }
@@ -215,8 +183,8 @@ public class Drive extends SubsystemBase {
     resetGyro();
     m_odometry.resetPosition(
       Rotation2d.fromDegrees(getAngle()),
-      0,
-      0,
+      getDistance()[0],
+      getDistance()[1],
       pose
     );
   }
