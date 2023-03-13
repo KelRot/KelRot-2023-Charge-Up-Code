@@ -69,8 +69,11 @@ public class Drive extends SubsystemBase {
     m_leftMotorControllerGroup = new MotorControllerGroup(m_leftFrontMotor, m_leftBackMotor);
     m_rightMotorControllerGroup = new MotorControllerGroup(m_rightFrontMotor, m_rightBackMotor);
 
-    m_leftMotorControllerGroup.setInverted(DriveConstants.isLeftInverted);
-    m_rightMotorControllerGroup.setInverted(DriveConstants.isRightInverted);
+    m_leftFrontMotor.setInverted(DriveConstants.isLeftInverted);
+    m_leftBackMotor.setInverted(DriveConstants.isLeftInverted);
+
+    m_rightFrontMotor.setInverted(DriveConstants.isRightInverted);
+    m_rightBackMotor.setInverted(DriveConstants.isRightInverted);
 
     m_drive = new DifferentialDrive(m_leftMotorControllerGroup, m_rightMotorControllerGroup);
 
@@ -88,7 +91,7 @@ public class Drive extends SubsystemBase {
       new Pose2d()
     );
 
-    setMaxOutput(DriveConstants.kMaxOutput);
+    setNormalMode();
     setSparkMode(IdleMode.kCoast);
 
     m_brake = false;
@@ -105,6 +108,7 @@ public class Drive extends SubsystemBase {
   public void tankDriveVolts(double leftVolts, double rightVolts) {
     m_leftMotorControllerGroup.setVoltage(leftVolts);
     m_rightMotorControllerGroup.setVoltage(rightVolts);
+    
     feed();
   }
 
@@ -115,10 +119,14 @@ public class Drive extends SubsystemBase {
 
   public void setMaxOutput(double kMaxSpeed){
     m_drive.setMaxOutput(kMaxSpeed);
-    m_leftBackMotor.enableVoltageCompensation(kMaxSpeed);
-    m_leftFrontMotor.enableVoltageCompensation(kMaxSpeed);
-    m_rightFrontMotor.enableVoltageCompensation(kMaxSpeed);
-    m_rightBackMotor.enableVoltageCompensation(kMaxSpeed);
+    
+  }
+
+  public void setVoltageCompensation(double kVoltage) {
+    m_leftBackMotor.enableVoltageCompensation(kVoltage);
+    m_leftFrontMotor.enableVoltageCompensation(kVoltage);
+    m_rightFrontMotor.enableVoltageCompensation(kVoltage);
+    m_rightBackMotor.enableVoltageCompensation(kVoltage);
   }
 
   public double getMaxOutput() {
@@ -140,12 +148,21 @@ public class Drive extends SubsystemBase {
     m_rightFrontMotor.setIdleMode(mode);
     m_rightBackMotor.setIdleMode(mode);
   }
+
   /* Encoder methods */
+
   public double[] getDistance() {return new double[] {m_leftEncoder.getDistance(), m_rightEncoder.getDistance()};}
 
   public void resetEncoders() {m_leftEncoder.reset(); m_rightEncoder.reset();}
 
   public double getAverageDistance() {return (getDistance()[0] + getDistance()[1]) / 2.0;}
+
+  public void printOutputs() {
+    SmartDashboard.putNumber("Left Front Output", m_leftFrontMotor.getAppliedOutput() * 12.0); 
+    SmartDashboard.putNumber("Left Back Output", m_leftBackMotor.getAppliedOutput() * 12.0); 
+    SmartDashboard.putNumber("Right Front Output", m_rightFrontMotor.getAppliedOutput() * 12.0); 
+    SmartDashboard.putNumber("Right Back Output", m_rightBackMotor.getAppliedOutput() * 12.0); 
+  }
 
   public void printDistance(){
     SmartDashboard.putNumber("Left encoder", getDistance()[0]);
@@ -193,6 +210,21 @@ public class Drive extends SubsystemBase {
     );
   }
 
+  public void setSlowMode() {
+    setMaxOutput(4.0);
+    setVoltageCompensation(4.0);
+  }
+
+  public void setNormalMode() {
+    setMaxOutput(8.0);
+    setVoltageCompensation(8.0);
+  }
+
+  public void setFastMode() {
+    setMaxOutput(12.0);
+    setVoltageCompensation(12.0);
+  }
+
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
     return new DifferentialDriveWheelSpeeds(m_leftEncoder.getRate(), m_rightEncoder.getRate());
   }
@@ -211,6 +243,7 @@ public class Drive extends SubsystemBase {
     printPose();
     printAngle();
     printDistance();
+    printOutputs();
   }
 
   @Override

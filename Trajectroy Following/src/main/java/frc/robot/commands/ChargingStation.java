@@ -1,6 +1,8 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.ChargingConstants;
 import frc.robot.subsystems.Drive;
@@ -8,6 +10,7 @@ import frc.robot.subsystems.Drive;
 public class ChargingStation extends CommandBase {
   private final Drive m_drive;
   private final PIDController m_pid;
+  private boolean m_isReached;
   private boolean m_finished;
   private double m_prevMaxOutput;
 
@@ -15,10 +18,11 @@ public class ChargingStation extends CommandBase {
     m_drive = drive;
 
     m_pid = new PIDController(ChargingConstants.kP, ChargingConstants.kI, ChargingConstants.kD);
-    m_pid.setTolerance(3, 5);
+    m_pid.setTolerance(6, 5);
     //m_pid.setIntegratorRange(-0.5, 0.5);
 
     m_finished = false;
+    m_isReached = false;
     m_prevMaxOutput = 8.0;
 
     addRequirements(m_drive);
@@ -27,19 +31,36 @@ public class ChargingStation extends CommandBase {
   @Override
   public void initialize() {
     m_prevMaxOutput = m_drive.getMaxOutput();
-    m_drive.setMaxOutput(4);
+    m_isReached = false;
+    m_drive.setMaxOutput(5.0);
+    m_drive.setGyroAxis(IMUAxis.kY);
+    m_drive.resetGyro();
     m_pid.reset();
+
+    SmartDashboard.putString("Charging State", "Initialized");
   }
 
   @Override
   public void execute() {
-    double volts = m_pid.calculate(m_drive.getAngle(), 0);
-    m_drive.tankDriveVolts(volts, volts);
+    SmartDashboard.putString("Charging State", "Executing");
+    SmartDashboard.putBoolean("Is Reached", m_isReached);
+    if(m_isReached == false) {
+      m_drive.tankDriveVolts(4.0, 4.0);
+      if(Math.abs(m_drive.getAngle()) > 14.0)
+        m_isReached = true;
+    }
+    else {
+      double volts = m_pid.calculate(m_drive.getAngle(), 0);
+      m_drive.tankDriveVolts(volts, volts);
+    }
+    
   }
 
   @Override
   public void end(boolean interrupted) {
+    SmartDashboard.putString("Charging State", "Finished");
     m_drive.setMaxOutput(m_prevMaxOutput);
+    m_drive.setGyroAxis(IMUAxis.kZ);
   }
 
   @Override

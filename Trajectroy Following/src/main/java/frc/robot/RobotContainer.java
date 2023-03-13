@@ -86,9 +86,9 @@ public class RobotContainer {
     button[3].whileTrue(new InstantCommand(() -> m_pneumatics.getIntakeSolenoid().toggle()));
 
     /* speed */
-    button[4].whileTrue(new InstantCommand(() -> m_drive.setMaxOutput(4.0)));
-    button[5].whileTrue(new InstantCommand(() -> m_drive.setMaxOutput(8.0)));
-    button[6].whileTrue(new InstantCommand(() -> m_drive.setMaxOutput(12.0)));
+    button[4].whileTrue(new InstantCommand(() -> m_drive.setSlowMode()));
+    button[5].whileTrue(new InstantCommand(() -> m_drive.setNormalMode()));
+    button[6].whileTrue(new InstantCommand(() -> m_drive.setFastMode()));
 
     /* brake */
     button[7].whileTrue(new InstantCommand(() -> m_drive.changeIdleMode()));
@@ -97,8 +97,8 @@ public class RobotContainer {
     button[8].whileTrue(new InstantCommand(() -> m_drive.resetOdometry()));
 
     
-    button[9].debounce(0.5).onTrue(m_chargingStation);
-    button[10].debounce(0.5).onTrue(new InstantCommand(() -> m_chargingStation.cancel()));
+    button[9].onTrue(m_chargingStation);
+    button[10].onTrue(new InstantCommand(() -> m_chargingStation.cancel()));
     
   }
 
