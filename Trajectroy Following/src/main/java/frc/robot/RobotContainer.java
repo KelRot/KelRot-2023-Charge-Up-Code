@@ -54,7 +54,7 @@ public class RobotContainer {
     m_drive.setDefaultCommand(driveCommand);
 
     JoystickButton button[] = {
-      new JoystickButton(m_joystick, 5), // toggle compressor
+      new JoystickButton(m_joystick, 10), // toggle compressor
       new JoystickButton(m_helicopter, 5), // full open
       new JoystickButton(m_helicopter, 3), // full close
       new JoystickButton(m_helicopter, 1), // intake toggle
@@ -64,7 +64,8 @@ public class RobotContainer {
       new JoystickButton(m_joystick, 4), // brake mode toggle
       new JoystickButton(m_joystick, 7), // odometry button
       new JoystickButton(m_joystick, 8), // charging run
-      new JoystickButton(m_joystick, 9) // charging stop
+      new JoystickButton(m_joystick, 9), // charging stop
+      new JoystickButton(m_joystick, 6) // pulley reset
     };
 
     JoystickButton byHand[] = {
@@ -102,6 +103,7 @@ public class RobotContainer {
     
     button[9].onTrue(m_chargingStation);
     button[10].onTrue(new InstantCommand(() -> m_chargingStation.cancel()));
+    button[11].onTrue(new InstantCommand(() -> m_pulley.resetEncoder()));
     
   }
 

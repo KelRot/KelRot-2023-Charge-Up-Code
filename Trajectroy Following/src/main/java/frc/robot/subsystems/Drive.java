@@ -51,8 +51,9 @@ public class Drive extends SubsystemBase {
   }
 
   public void configureEncoder(Encoder encoder, boolean isInverted){
-    encoder.setDistancePerPulse(EncoderConstants.kWheelC * EncoderConstants.kCountsPerRev / 4);
+    encoder.setDistancePerPulse(EncoderConstants.kDistancePerPulse);
     encoder.setReverseDirection(isInverted);
+    encoder.reset();
   }
   
   public Drive() {
@@ -79,8 +80,8 @@ public class Drive extends SubsystemBase {
 
     m_leftEncoder = new Encoder(EncoderConstants.kLeftA, EncoderConstants.kLeftB);
     m_rightEncoder = new Encoder(EncoderConstants.kRightA, EncoderConstants.kRightB);
-    configureEncoder(m_leftEncoder, true);
-    configureEncoder(m_rightEncoder, false);
+    configureEncoder(m_leftEncoder, false);
+    configureEncoder(m_rightEncoder, true);
 
     resetGyro();
 

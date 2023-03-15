@@ -10,12 +10,12 @@ public final class Constants {
   public static class EncoderConstants {
     public static final double kWheelC = 0.1525 * Math.PI;
 
-    public static final int kCountsPerRev = 4096;
+    public static final double kDistancePerPulse = kWheelC * 1.0/1024.0;
 
-    public static final int kLeftA = 2;
-    public static final int kLeftB = 1;
-    public static final int kRightA = 3;
-    public static final int kRightB = 4;
+    public static final int kLeftA = 5;
+    public static final int kLeftB = 4;
+    public static final int kRightA = 7;
+    public static final int kRightB = 6;
 
   }                                   
 
@@ -68,12 +68,12 @@ public final class Constants {
 
   public static class PulleyConstants{
     public static final int kA = 0;
-    public static final int kB = 9;
+    public static final int kB = 2;
 
     public static final double kCloseStateLength = 0.0;
-    public static final double kOpenStateLength = 0.0;
-    public static final double kHalfStateLength = 0.0;
-    public static final double kTolerance = 0.0;
+    public static final double kOpenStateLength = 4000.0;
+    public static final double kHalfStateLength = 2500.0;
+    public static final double kTolerance = 200.0;
 
     public static final double kTime = 0.0;
     public static final double kTelescopeToIntake = 0.7;

@@ -16,8 +16,7 @@ public class DriveCommand extends CommandBase {
 
   @Override
   public void initialize() {
-    m_drive.resetGyro();
-    m_drive.resetEncoders();  
+    m_drive.resetOdometry();
   }
 
   @Override
