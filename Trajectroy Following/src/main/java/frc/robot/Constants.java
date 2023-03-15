@@ -61,9 +61,9 @@ public final class Constants {
   }
 
   public static class ChargingConstants {
-    public static final double kP = 0.3;
+    public static final double kP = 0.31;
     public static final double kI = 0.0;
-    public static final double kD = 0.0;
+    public static final double kD = 0.055;
   }
 
   public static class PulleyConstants{

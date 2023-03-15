@@ -10,6 +10,7 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Pneumatics;
 import frc.robot.subsystems.Pulley;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -35,6 +36,8 @@ public class RobotContainer {
   private final Command m_pathFollower21Path = P.generateRamsete(m_drive, P.auto21);
   private final ChargingStation m_chargingStation = new ChargingStation(m_drive);
   private final AutoScore m_autoScore = new AutoScore(m_pneumatics, m_pulley);
+
+  
 
   /*private final SequentialCommandGroup m_21auto = new SequentialCommandGroup(
     m_autoScore,
@@ -168,5 +171,10 @@ public class RobotContainer {
     m_drive.resetOdometry(autoTrajectory.getInitialPose());
 
     return m_ramsete.andThen(() -> m_drive.stopMotors()); */
+  }
+
+  public void testPeriodic() {
+    var volts = SmartDashboard.getNumber("Test Volts", 0);
+    m_drive.tankDriveVolts(volts, volts);
   }
 }

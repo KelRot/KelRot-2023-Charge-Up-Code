@@ -30,22 +30,23 @@ public class ChargingStation extends CommandBase {
 
   @Override
   public void initialize() {
+    SmartDashboard.putString("Charging State", "Initialized");
+
     m_prevMaxOutput = m_drive.getMaxOutput();
     m_isReached = false;
-    m_drive.setMaxOutput(5.0);
+    m_drive.setNormalMode();
     m_drive.setGyroAxis(IMUAxis.kY);
     m_drive.resetGyro();
     m_pid.reset();
-
-    SmartDashboard.putString("Charging State", "Initialized");
   }
 
   @Override
   public void execute() {
     SmartDashboard.putString("Charging State", "Executing");
+    
     SmartDashboard.putBoolean("Is Reached", m_isReached);
     if(m_isReached == false) {
-      m_drive.tankDriveVolts(4.0, 4.0);
+      m_drive.tankDriveVolts(7, 7);
       if(Math.abs(m_drive.getAngle()) > 14.0)
         m_isReached = true;
     }
@@ -53,13 +54,12 @@ public class ChargingStation extends CommandBase {
       double volts = m_pid.calculate(m_drive.getAngle(), 0);
       m_drive.tankDriveVolts(volts, volts);
     }
-    
   }
 
   @Override
   public void end(boolean interrupted) {
     SmartDashboard.putString("Charging State", "Finished");
-    m_drive.setMaxOutput(m_prevMaxOutput);
+    
     m_drive.setGyroAxis(IMUAxis.kZ);
   }
 
@@ -68,3 +68,4 @@ public class ChargingStation extends CommandBase {
     return m_finished;
   }
 }
+// p 0.31, d 0.05, tank 5
