@@ -46,7 +46,7 @@ public class ChargingStation extends CommandBase {
     
     SmartDashboard.putBoolean("Is Reached", m_isReached);
     if(m_isReached == false) {
-      m_drive.tankDriveVolts(7, 7);
+      m_drive.tankDriveVolts(-7, -7);
       if(Math.abs(m_drive.getAngle()) > 14.0)
         m_isReached = true;
     }

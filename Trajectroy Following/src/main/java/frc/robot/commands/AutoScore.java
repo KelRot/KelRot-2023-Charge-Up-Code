@@ -10,7 +10,7 @@ public class AutoScore extends CommandBase {
   private final Pneumatics m_pneumatics;
   private final Pulley m_pulley;
   private final Timer m_timer = new Timer();
-  private boolean m_finished = false;
+  private boolean m_finished = false, m_closing;
 
   public AutoScore(Pneumatics pneumatics, Pulley pulley) {
     m_pneumatics = pneumatics;
@@ -20,23 +20,36 @@ public class AutoScore extends CommandBase {
 
   @Override
   public void initialize() {
+    m_timer.stop();
     m_timer.reset();
-    m_timer.start();
     m_finished = false;
-    m_pulley.set(PulleyConstants.kOpenStateLength);
+    m_closing = false;
+    m_pulley.set(PulleyConstants.kFullOpenStateLength);
   }
 
   @Override
   public void execute() {
-    if(m_timer.get() >= 1.5){
-      m_pneumatics.getArmSolenoid().open();
-    }
-    if(m_timer.get() >= 2.3){
-      m_pneumatics.getTelescopeSolenoid().open();
-    }
-    if(m_timer.get() >= 2.7){
-      m_pneumatics.getIntakeSolenoid().open();
-      m_finished = true;
+    if(!m_closing){
+      if(m_pulley.getDistance() >= PulleyConstants.kArmOpenStateLength){
+        m_pneumatics.getArmSolenoid().open();
+      }
+      if(m_pulley.getDistance() >= PulleyConstants.kFullOpenStateLength - PulleyConstants.kTolerance * 5){
+        m_pneumatics.getTelescopeSolenoid().open();
+        m_timer.start();
+      }
+      if(m_timer.get() >= 0.7){
+        m_pneumatics.getIntakeSolenoid().open();
+      }
+      if(m_timer.get() >= 1.5){
+        m_pneumatics.getTelescopeSolenoid().close();
+        m_pulley.set(PulleyConstants.kArmOpenStateLength);
+        m_closing = true;
+      }
+    }else{
+      if(m_pulley.getDistance() <= PulleyConstants.kOnGroundStateLength){
+        m_pneumatics.getArmSolenoid().close();
+        m_finished = true;
+      }
     }
   }
 

@@ -1,7 +1,5 @@
 package frc.robot.commands;
 
-import javax.print.attribute.standard.Finishings;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.PulleyConstants;
@@ -22,19 +20,23 @@ public class CyclindersFullOpen extends CommandBase {
 
   @Override
   public void initialize() {
+    m_timer.stop();
     m_timer.reset();
-    m_timer.start();
     m_finished = false;
-    m_pulley.set(PulleyConstants.kOpenStateLength);
+    m_pulley.set(PulleyConstants.kFullOpenStateLength);
   }
 
   @Override
   public void execute() {
-    if(m_timer.get() >= 3){
+    if(m_pulley.getDistance() >= PulleyConstants.kArmOpenStateLength){
       m_pneumatics.getArmSolenoid().open();
     }
-    if(m_timer.get() >= 3.5){
+    if(m_pulley.getDistance() >= PulleyConstants.kFullOpenStateLength){
       m_pneumatics.getTelescopeSolenoid().open();
+      m_timer.start();
+    }
+    if(m_timer.get() >= 0.7){
+      m_pneumatics.getIntakeSolenoid().open();
       m_finished = true;
     }
   }

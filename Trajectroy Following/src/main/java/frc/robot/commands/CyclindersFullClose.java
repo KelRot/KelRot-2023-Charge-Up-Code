@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.PulleyConstants;
 import frc.robot.subsystems.Pneumatics;
@@ -8,6 +9,8 @@ import frc.robot.subsystems.Pulley;
 public class CyclindersFullClose extends CommandBase {
   private final Pneumatics m_pneumatics;
   private final Pulley m_pulley;
+  private final Timer m_timer = new Timer();
+  private boolean m_finished = false;
 
   public CyclindersFullClose(Pneumatics pneumatics, Pulley pulley) {
     m_pneumatics = pneumatics;
@@ -17,19 +20,26 @@ public class CyclindersFullClose extends CommandBase {
 
   @Override
   public void initialize() {
+    m_timer.reset();
+    m_timer.start();
+    m_finished = false;
+    m_pulley.set(PulleyConstants.kOnGroundStateLength);
     m_pneumatics.getTelescopeSolenoid().close();
-    m_pneumatics.getArmSolenoid().close();
-    m_pulley.set(PulleyConstants.kHalfStateLength);
   }
 
   @Override
-  public void execute() {}
+  public void execute() {
+    if(m_pulley.getDistance() <= PulleyConstants.kOnGroundStateLength + PulleyConstants.kTolerance){
+      m_pneumatics.getArmSolenoid().close();
+      m_finished = true;
+    }
+  }
 
   @Override
   public void end(boolean interrupted) {}
 
   @Override
   public boolean isFinished() {
-    return true;
+    return m_finished;
   }
 }

@@ -61,19 +61,20 @@ public final class Constants {
   }
 
   public static class ChargingConstants {
-    public static final double kP = 0.31;
+    public static final double kP = 0.319;
     public static final double kI = 0.0;
-    public static final double kD = 0.055;
+    public static final double kD = 0.04;
   }
 
   public static class PulleyConstants{
     public static final int kA = 0;
     public static final int kB = 2;
 
-    public static final double kCloseStateLength = 0.0;
-    public static final double kOpenStateLength = 4000.0;
-    public static final double kHalfStateLength = 2500.0;
-    public static final double kTolerance = 200.0;
+    public static final double kFullCloseStateLength = 0.0;
+    public static final double kFullOpenStateLength = 2650.0;
+    public static final double kOnGroundStateLength = 1350.0;
+    public static final double kArmOpenStateLength = 250.0;
+    public static final double kTolerance = 50.0;
 
     public static final double kTime = 0.0;
     public static final double kTelescopeToIntake = 0.7;

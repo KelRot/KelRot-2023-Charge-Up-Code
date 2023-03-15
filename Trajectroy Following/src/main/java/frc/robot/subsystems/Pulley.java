@@ -3,11 +3,9 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.PulleyConstants;
 
-import java.time.Period;
 
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Pulley extends SubsystemBase {
@@ -42,7 +40,7 @@ public class Pulley extends SubsystemBase {
   }
 
   public void set(double set_point){
-    double d = m_encoder.getDistance() - set_point;
+    double d = getDistance() - set_point;
     m_setPoint = set_point;
     if(Math.abs(d) >= PulleyConstants.kTolerance){
       m_isMoving = true;
@@ -53,10 +51,15 @@ public class Pulley extends SubsystemBase {
       }
     }else{
       m_isMoving = false;
-      m_setPoint = 0.0;
+      m_setPoint = PulleyConstants.kOnGroundStateLength;
       m_speed = 0.0;
     }
   }
+
+  public double getDistance(){
+    return m_encoder.getDistance();
+  }
+
   public void runPulley(){
     if(m_isMoving){
       set(m_setPoint);
