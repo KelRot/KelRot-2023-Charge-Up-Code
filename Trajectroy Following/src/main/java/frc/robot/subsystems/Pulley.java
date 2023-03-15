@@ -13,6 +13,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Pulley extends SubsystemBase {
   private final PWMVictorSPX m_pgController;
   private final Encoder m_encoder;
+  private double m_speed, m_setPoint;
+  private boolean m_isMoving;
 
   // encoder is 0 at the full closed state
   // encoder is max at the full open state
@@ -22,38 +24,50 @@ public class Pulley extends SubsystemBase {
     m_encoder = new Encoder(PulleyConstants.kA, PulleyConstants.kB);
     m_encoder.setDistancePerPulse(1);
     m_encoder.reset();
-    
-  }
-
-  public void setMotorVolts(double volts) {
-    m_pgController.setVoltage(volts);
+    m_speed = 0.0;
+    m_setPoint = 0.0;
+    m_isMoving = false;
   }
 
   public void openPulley(){
-    m_pgController.setVoltage(12.0);
+    m_speed = -12.0;
   }
 
   public void stopPulley(){
-    m_pgController.setVoltage(0.0);
+    m_speed = 0.0;
   }
 
   public void closePulley(){
-    m_pgController.setVoltage(-12.0);
+    m_speed = 12.0;
   }
 
   public void set(double set_point){
     double d = m_encoder.getDistance() - set_point;
+    m_setPoint = set_point;
     if(Math.abs(d) >= PulleyConstants.kTolerance){
+      m_isMoving = true;
       if(d < 0){
         openPulley();
       }else{
         closePulley();
       }
+    }else{
+      m_isMoving = false;
+      m_setPoint = 0.0;
+      m_speed = 0.0;
     }
   }
+  public void runPulley(){
+    if(m_isMoving){
+      set(m_setPoint);
+    }
+    m_pgController.set(m_speed);
+  }
 
-  public void resetEncoder(){
+  public void reset(){
     m_encoder.reset();
+    m_setPoint = m_speed = 0;
+    m_isMoving = false;
   }
 
   public void debug(){
@@ -62,6 +76,7 @@ public class Pulley extends SubsystemBase {
 
   @Override
   public void periodic(){
+    runPulley();
     debug();
   }
 }

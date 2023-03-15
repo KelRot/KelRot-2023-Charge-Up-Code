@@ -27,8 +27,8 @@ public class RobotContainer {
 
   private final DriveCommand driveCommand = new DriveCommand(m_drive, m_joystick);
 
-  private final CyclindersFullOpen m_fullOpenCommand = new CyclindersFullOpen(m_pneumatics);
-  private final CyclindersFullClose m_fullCloseCommand = new CyclindersFullClose(m_pneumatics);
+  private final CyclindersFullOpen m_fullOpenCommand = new CyclindersFullOpen(m_pneumatics, m_pulley);
+  private final CyclindersFullClose m_fullCloseCommand = new CyclindersFullClose(m_pneumatics, m_pulley);
 
   private final Command m_pathFollowerLine = P.generateRamsete(m_drive, P.straightLine);
   private final Command m_pathFollowerS = P.generateRamsete(m_drive, P.S);
@@ -72,8 +72,8 @@ public class RobotContainer {
       new JoystickButton(m_helicopter, 8), //intake toogle
       new JoystickButton(m_helicopter, 10), //telescope toogle
       new JoystickButton(m_helicopter, 12), //arm toogle
-      new JoystickButton(m_helicopter, 6), //pulley close
-      new JoystickButton(m_helicopter, 4) //pulley open
+      new JoystickButton(m_helicopter, 4), //pulley close
+      new JoystickButton(m_helicopter, 6) //pulley open
     };
 
     byHand[0].whileTrue(new InstantCommand(() -> m_pneumatics.getIntakeSolenoid().toggle()));
@@ -103,12 +103,12 @@ public class RobotContainer {
     
     button[9].onTrue(m_chargingStation);
     button[10].onTrue(new InstantCommand(() -> m_chargingStation.cancel()));
-    button[11].onTrue(new InstantCommand(() -> m_pulley.resetEncoder()));
+    button[11].onTrue(new InstantCommand(() -> m_pulley.reset()));
     
   }
 
   public Command getAutonomousCommand() {
-    return m_pathFollower21Path;
+    return m_autoScore;
     /*Trajectory autoTrajectory = TrajectoryGenerator.generateTrajectory(
       P.auto21.kStart,
 

@@ -10,7 +10,7 @@ public class AutoScore extends CommandBase {
   private final Pneumatics m_pneumatics;
   private final Pulley m_pulley;
   private final Timer m_timer = new Timer();
-  private boolean m_finished;
+  private boolean m_finished = false;
 
   public AutoScore(Pneumatics pneumatics, Pulley pulley) {
     m_pneumatics = pneumatics;
@@ -20,25 +20,23 @@ public class AutoScore extends CommandBase {
 
   @Override
   public void initialize() {
-    m_pneumatics.getArmSolenoid().open();
-    m_pulley.set(PulleyConstants.kOpenStateLength);
     m_timer.reset();
     m_timer.start();
     m_finished = false;
+    m_pulley.set(PulleyConstants.kOpenStateLength);
   }
 
   @Override
   public void execute() {
-    if(m_pneumatics.getTelescopeSolenoid().getState() == false){
-      if(m_timer.get() >= PulleyConstants.kTime){
-        m_pneumatics.getTelescopeSolenoid().open();
-        m_timer.reset();
-      }
-    }else{
-      if(m_timer.get() >= PulleyConstants.kTelescopeToIntake){
-        m_pneumatics.getIntakeSolenoid().open();
-        m_finished = true;
-      }
+    if(m_timer.get() >= 1.5){
+      m_pneumatics.getArmSolenoid().open();
+    }
+    if(m_timer.get() >= 2.3){
+      m_pneumatics.getTelescopeSolenoid().open();
+    }
+    if(m_timer.get() >= 2.7){
+      m_pneumatics.getIntakeSolenoid().open();
+      m_finished = true;
     }
   }
 

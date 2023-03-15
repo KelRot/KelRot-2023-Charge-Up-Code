@@ -1,17 +1,23 @@
 package frc.robot.commands;
 
+import javax.print.attribute.standard.Finishings;
+
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants.PulleyConstants;
 import frc.robot.subsystems.Pneumatics;
+import frc.robot.subsystems.Pulley;
 
 public class CyclindersFullOpen extends CommandBase {
   private final Pneumatics m_pneumatics;
+  private final Pulley m_pulley;
   private final Timer m_timer = new Timer();
   private boolean m_finished = false;
 
-  public CyclindersFullOpen(Pneumatics pneumatics) {
+  public CyclindersFullOpen(Pneumatics pneumatics, Pulley pulley) {
     m_pneumatics = pneumatics;
-    addRequirements(m_pneumatics);
+    m_pulley = pulley;
+    addRequirements(m_pneumatics, m_pulley);
   }
 
   @Override
@@ -19,12 +25,15 @@ public class CyclindersFullOpen extends CommandBase {
     m_timer.reset();
     m_timer.start();
     m_finished = false;
-    m_pneumatics.getArmSolenoid().open();
+    m_pulley.set(PulleyConstants.kOpenStateLength);
   }
 
   @Override
   public void execute() {
-    if(m_timer.get() >= 0.9){
+    if(m_timer.get() >= 3){
+      m_pneumatics.getArmSolenoid().open();
+    }
+    if(m_timer.get() >= 3.5){
       m_pneumatics.getTelescopeSolenoid().open();
       m_finished = true;
     }
