@@ -23,7 +23,7 @@ public class ChargingStation extends CommandBase {
 
     m_finished = false;
     m_isReached = false;
-    m_prevMaxOutput = 8.0;
+    m_prevMaxOutput = 7.0;
 
     addRequirements(m_drive);
   }
