@@ -32,14 +32,17 @@ public class Pulley extends SubsystemBase {
     m_pgController.setVoltage(-12.0);
   }
 
-  public void set(double set_point){
-    double d = m_encoder.getDistance() - set_point;
-    if(Math.abs(d) >= PulleyConstants.kTolerance){
-      if(d > 0){
-        openPulley();
-      }else{
-        closePulley();
-      }
+  public void openState(){
+    if(Math.abs(m_encoder.getDistance() - PulleyConstants.kOpenStateLength) >= PulleyConstants.kTolerance){
+      openPulley();
+    }else{
+      stopPulley();
+    }
+  }
+
+  public void closeState(){
+    if(Math.abs(m_encoder.getDistance() - PulleyConstants.kCloseStateLength) >= PulleyConstants.kTolerance){
+      closePulley();
     }else{
       stopPulley();
     }
