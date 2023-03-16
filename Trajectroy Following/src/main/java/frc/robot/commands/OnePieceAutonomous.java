@@ -16,7 +16,7 @@ public class OnePieceAutonomous extends CommandBase {
   private final Pneumatics m_pneumatics;
   private final Pulley m_pulley;
   private final PIDController m_pid;
-  private final Timer m_timer = new Timer();
+  private final Timer m_timer = new Timer(), m_autoTimer = new Timer();
   private boolean m_finished, m_closing, m_isReached;
 
   public OnePieceAutonomous(Drive drive, Pneumatics pneumatics, Pulley pulley) {
@@ -43,6 +43,10 @@ public class OnePieceAutonomous extends CommandBase {
     m_drive.setGyroAxis(IMUAxis.kY);
     m_drive.resetGyro();
     m_pid.reset();
+
+    m_autoTimer.reset();
+    m_autoTimer.start();
+    SmartDashboard.putNumber("Auto Time", m_autoTimer.get());
   }
 
   @Override
@@ -79,8 +83,9 @@ public class OnePieceAutonomous extends CommandBase {
         double volts = m_pid.calculate(m_drive.getAngle(), 0);
         m_drive.tankDriveVolts(volts, volts);
       }
-    
     }
+    
+    SmartDashboard.putNumber("Auto Time", m_autoTimer.get());
   }
 
   @Override
