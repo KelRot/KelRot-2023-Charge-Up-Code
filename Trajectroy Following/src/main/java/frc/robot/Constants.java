@@ -65,6 +65,9 @@ public final class Constants {
     public static final double kP = 0.319;
     public static final double kI = 0.0;
     public static final double kD = 0.04;
+
+    public static final double kRequiredVoltage = -7.0; // required voltage to beat charging station
+    public static final double kRequiredAngle = 13.5;
   }
 
   public static class PulleyConstants{
@@ -101,9 +104,14 @@ public final class Constants {
   }
 
   public static class AlignConstants {
-    public static final double kP = 0.0; // anguler
-    public static final double kI = 0.0;
-    public static final double kD = 0.0;
-    public static final double kTolerance = 2.0; // deg
+    public static final double kAngularP = 0.0; // angular
+    public static final double kAngularI = 0.0;
+    public static final double kAngularD = 0.0;
+    public static final double kAngularTolerance = 2.0; // deg
+
+    public static final double kLinearP = 0.0; // linear
+    public static final double kLinearI = 0.0;
+    public static final double kLinearD = 0.0;
+    public static final double kLinearTolerance = 0.02; // m
   }
 }

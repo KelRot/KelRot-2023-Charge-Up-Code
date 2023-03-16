@@ -56,24 +56,23 @@ public class OnePieceAutonomous extends CommandBase {
         m_pneumatics.getTelescopeSolenoid().open();
         m_timer.start();
       }
-      if(m_timer.get() >= 0.5){
+      if(m_timer.get() >= 0.1){
         m_pneumatics.getIntakeSolenoid().open();
       }
-      if(m_timer.get() >= 1){
+      if(m_timer.get() >= 0.8){
         m_pneumatics.getTelescopeSolenoid().close();
         m_pulley.set(PulleyConstants.kFullCloseStateLength);
         m_closing = true;
         SmartDashboard.putString("One Piece Auto", "Piece Scored");
       }
-
     }else{
       
       if(m_pulley.getDistance() <= PulleyConstants.kOnGroundStateLength){
         m_pneumatics.getArmSolenoid().close();
       }
       if(m_isReached == false) {
-        m_drive.tankDriveVolts(-7, -7);
-        if(Math.abs(m_drive.getAngle()) > 14.0)
+        m_drive.tankDriveVolts(ChargingConstants.kRequiredVoltage, ChargingConstants.kRequiredVoltage);
+        if(Math.abs(m_drive.getAngle()) > ChargingConstants.kRequiredAngle)
           m_isReached = true;
       }
       else {

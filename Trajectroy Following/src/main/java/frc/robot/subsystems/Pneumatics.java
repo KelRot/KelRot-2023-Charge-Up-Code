@@ -21,31 +21,33 @@ public class Pneumatics extends SubsystemBase {
     private final DoubleSolenoid m_sol;
     private boolean m_state;
     private final String m_name;
+    
     public Solenoid(int[] pin, String name){
       m_sol = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, pin[0], pin[1]);
       m_state = false;
       m_name = name;
       setSolenoid("reverse", m_sol);
-      debug();
     }
+
     public void toggle(){
       m_sol.toggle();
       m_state = !m_state;
-      debug();
     }
+    
     public void open(){
       m_sol.set(kForward);
       m_state = true;
-      debug();
     }
+    
     public void close(){
       m_sol.set(kReverse);
       m_state = false;
-      debug();
     }
+
     public boolean getState(){
       return m_state;
     }
+
     private void debug(){
       SmartDashboard.putBoolean(m_name, m_state);
     }
@@ -96,19 +98,10 @@ public class Pneumatics extends SubsystemBase {
       m_compressor.enableDigital();
   }
 
-  public boolean exampleCondition() {
-    // Query some boolean state, such as a digital sensor.
-    return false;
-  }
-
   @Override
   public void periodic() {
-
-    // This method will be called once per scheduler run
-  }
-
-  @Override
-  public void simulationPeriodic() {
-    // This method will be called once per scheduler run during simulation
+    dIntakeSolenoid.debug();
+    dTelescopSolenoid.debug();
+    dArmSolenoid.debug();
   }
 }

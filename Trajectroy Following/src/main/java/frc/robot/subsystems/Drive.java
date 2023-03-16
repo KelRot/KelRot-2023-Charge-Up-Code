@@ -106,6 +106,10 @@ public class Drive extends SubsystemBase {
     m_drive.curvatureDrive(-js.getRawAxis(1), js.getRawAxis(0) * 0.5, true);
   }
 
+  public void curvatureDrive(double speed, double rot) {
+    m_drive.curvatureDrive(speed, rot, true);
+  }
+
   public void tankDriveVolts(double leftVolts, double rightVolts) {
     m_leftMotorControllerGroup.setVoltage(leftVolts);
     m_rightMotorControllerGroup.setVoltage(rightVolts);

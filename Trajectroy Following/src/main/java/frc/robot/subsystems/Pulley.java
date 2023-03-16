@@ -51,7 +51,7 @@ public class Pulley extends SubsystemBase {
       }
     }else{
       m_isMoving = false;
-      m_setPoint = PulleyConstants.kOnGroundStateLength;
+      m_setPoint = 0.0;
       m_speed = 0.0;
     }
   }
@@ -69,7 +69,8 @@ public class Pulley extends SubsystemBase {
 
   public void reset(){
     m_encoder.reset();
-    m_setPoint = m_speed = 0;
+    m_setPoint = 0.0;
+    m_speed = 0.0;
     m_isMoving = false;
   }
 

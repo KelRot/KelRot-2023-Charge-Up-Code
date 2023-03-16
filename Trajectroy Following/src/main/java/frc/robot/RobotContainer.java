@@ -21,16 +21,17 @@ import edu.wpi.first.net.PortForwarder;
 
 public class RobotContainer {
   private final Drive m_drive = new Drive();
-  private final Align m_align = new Align();
-  private final Pneumatics m_pneumatics = new Pneumatics();
+  private final Align m_vision = new Align();
   private final Pulley m_pulley = new Pulley();
+  private final Pneumatics m_pneumatics = new Pneumatics();
 
   private final Joystick m_joystick = new Joystick(0);
   private final Joystick m_helicopter = new Joystick(1);
 
   private final DriveCommand driveCommand = new DriveCommand(m_drive, m_joystick);
 
-  private final AlignCommand m_alignCommand = new AlignCommand(m_drive, m_align);
+  private final AlignCommand m_alignCommandCube = new AlignCommand(m_drive, m_vision, true);
+  private final AlignCommand m_alignCommandCone = new AlignCommand(m_drive, m_vision, false);
 
   private final CyclindersFullOpen m_fullOpenCommand = new CyclindersFullOpen(m_pneumatics, m_pulley);
   private final CyclindersFullClose m_fullCloseCommand = new CyclindersFullClose(m_pneumatics, m_pulley);
@@ -86,13 +87,12 @@ public class RobotContainer {
     };
 
     byHand[0].whileTrue(new InstantCommand(() -> m_pneumatics.getIntakeSolenoid().toggle()));
-    byHand[1].whileTrue(new InstantCommand(() -> m_pneumatics.getTelescopeSolenoid().toggle()));
-    byHand[2].whileTrue(new InstantCommand(() -> m_pneumatics.getArmSolenoid().toggle()));
+    byHand[1].whileTrue(new InstantCommand(() -> m_pneumatics.getTelescopeSolenoid().toggle())); 
+    byHand[2].whileTrue(new InstantCommand(() -> m_pneumatics.getArmSolenoid().toggle())); 
 
     byHand[3].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
     byHand[4].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
 
-    /* */
     button[0].whileTrue(new InstantCommand(() -> m_pneumatics.toggleCompressor()));
     button[1].onTrue(m_fullOpenCommand);
     button[2].onTrue(m_fullCloseCommand);
@@ -113,7 +113,6 @@ public class RobotContainer {
     button[9].onTrue(m_chargingStation);
     button[10].onTrue(new InstantCommand(() -> m_chargingStation.cancel()));
     pov[0].onTrue(new InstantCommand(() -> m_pulley.reset()));
-    pov[1].onTrue(m_alignCommand);
 
 
     

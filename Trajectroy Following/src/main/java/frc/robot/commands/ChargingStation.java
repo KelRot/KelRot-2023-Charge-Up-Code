@@ -19,11 +19,9 @@ public class ChargingStation extends CommandBase {
 
     m_pid = new PIDController(ChargingConstants.kP, ChargingConstants.kI, ChargingConstants.kD);
     m_pid.setTolerance(6, 5);
-    //m_pid.setIntegratorRange(-0.5, 0.5);
 
     m_finished = false;
     m_isReached = false;
-    m_prevMaxOutput = 7.0;
 
     addRequirements(m_drive);
   }
@@ -45,9 +43,10 @@ public class ChargingStation extends CommandBase {
     SmartDashboard.putString("Charging State", "Executing");
     
     SmartDashboard.putBoolean("Is Reached", m_isReached);
+
     if(m_isReached == false) {
       m_drive.tankDriveVolts(-7, -7);
-      if(Math.abs(m_drive.getAngle()) > 14.0)
+      if(Math.abs(m_drive.getAngle()) > ChargingConstants.kRequiredAngle)
         m_isReached = true;
     }
     else {
@@ -68,4 +67,3 @@ public class ChargingStation extends CommandBase {
     return m_finished;
   }
 }
-// p 0.31, d 0.05, tank 5
