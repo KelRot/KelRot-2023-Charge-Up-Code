@@ -81,7 +81,7 @@ public final class Constants {
     public static final double kTelescopeToIntake = 0.7;
   }
   
-  public static class AprilTagConstants {
+  public static class LinearPathConstants {
     public static final Translation2d kFieldLeftUp = new Translation2d(0.0, 0.0);
     public static final Translation2d kFieldRightDown = new Translation2d(0.0, 0.0);
 

@@ -8,7 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Constants.AprilTagConstants;
+import frc.robot.Constants.LinearPathConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.TrajectoryConstants;
 import frc.robot.paths.P;
@@ -59,7 +59,7 @@ public class LinearPathFollower extends CommandBase {
             isFinished = false;
             m_degrees = degrees;
             m_setPoint = m_drive.getAngle() + m_degrees;
-            pid = new PIDController(AprilTagConstants.kP, AprilTagConstants.kI, AprilTagConstants.kD);
+            pid = new PIDController(LinearPathConstants.kP, LinearPathConstants.kI, LinearPathConstants.kD);
             pid.setTolerance(2.0);
         }
 
@@ -94,12 +94,12 @@ public class LinearPathFollower extends CommandBase {
 
     public Translation2d getAprilTagTranslation(int aprilTag) {
         switch(aprilTag) {
-            case 1: return AprilTagConstants.ID1;
-            case 2: return AprilTagConstants.ID2;
-            case 3: return AprilTagConstants.ID3;
-            case 4: return AprilTagConstants.ID4;
-            case 5: return AprilTagConstants.ID5;
-            case 6: return AprilTagConstants.ID6;
+            case 1: return LinearPathConstants.ID1;
+            case 2: return LinearPathConstants.ID2;
+            case 3: return LinearPathConstants.ID3;
+            case 4: return LinearPathConstants.ID4;
+            case 5: return LinearPathConstants.ID5;
+            case 6: return LinearPathConstants.ID6;
             default:
                 return new Translation2d(0.0, 0.0);
         }
@@ -107,13 +107,13 @@ public class LinearPathFollower extends CommandBase {
 
     @Override
     public void initialize() {
-        if (m_pose.getX() < AprilTagConstants.kFieldLeftUp.getX() && m_pose.getX() > AprilTagConstants.kFieldRightDown.getX() &&
-            m_pose.getY() < AprilTagConstants.kFieldLeftUp.getY() && m_pose.getY() > AprilTagConstants.kFieldRightDown.getY()) {
-            if(Math.abs(getAprilTagTranslation(m_aprilTag).getY() - m_pose.getY()) <= AprilTagConstants.kAlignTolerance) {
+        if (m_pose.getX() < LinearPathConstants.kFieldLeftUp.getX() && m_pose.getX() > LinearPathConstants.kFieldRightDown.getX() &&
+            m_pose.getY() < LinearPathConstants.kFieldLeftUp.getY() && m_pose.getY() > LinearPathConstants.kFieldRightDown.getY()) {
+            if(Math.abs(getAprilTagTranslation(m_aprilTag).getY() - m_pose.getY()) <= LinearPathConstants.kAlignTolerance) {
                 // ACROSS
                 m_taskSchedule = new Task[] {
                     new RotationTask(m_pose.getRotation().getDegrees()),
-                    new DriveTask(m_pose.getX() - AprilTagConstants.kAprilTagDistance, m_pose)
+                    new DriveTask(m_pose.getX() - LinearPathConstants.kAprilTagDistance, m_pose)
                 };
             }
             else {
@@ -122,7 +122,7 @@ public class LinearPathFollower extends CommandBase {
                     new RotationTask(Math.atan(m_pose.getX() / m_pose.getY()) + m_pose.getRotation().getDegrees()),
                     new DriveTask(m_pose.getY(), m_pose),
                     new RotationTask(m_pose.getY() < 0 ? -90 : 90),
-                    new DriveTask(m_pose.getX() - AprilTagConstants.kAprilTagDistance, m_pose)
+                    new DriveTask(m_pose.getX() - LinearPathConstants.kAprilTagDistance, m_pose)
                 };
             }
         } 
@@ -130,11 +130,11 @@ public class LinearPathFollower extends CommandBase {
             // OUTSIDE
             m_taskSchedule = new Task[] {
                 new RotationTask(-(90 - (Math.atan(m_pose.getX() / m_pose.getY()) + m_pose.getRotation().getDegrees()))),
-                new DriveTask(m_pose.getX() - AprilTagConstants.kFieldLeftUp.getX(), m_pose),
+                new DriveTask(m_pose.getX() - LinearPathConstants.kFieldLeftUp.getX(), m_pose),
                 new RotationTask(m_pose.getY() < 0 ? 90 : -90),
                 new DriveTask(m_pose.getY(), m_pose),
                 new RotationTask(m_pose.getY() < 0 ? -90 : 90),
-                new DriveTask(AprilTagConstants.kFieldLeftUp.getX() - AprilTagConstants.kAprilTagDistance, m_pose)
+                new DriveTask(LinearPathConstants.kFieldLeftUp.getX() - LinearPathConstants.kAprilTagDistance, m_pose)
             };
         }
 
