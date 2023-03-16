@@ -15,7 +15,7 @@ import frc.robot.paths.P;
 import frc.robot.paths.P.*;
 import frc.robot.subsystems.Drive;
 
-public class AprilPathFollower extends CommandBase {
+public class LinearPathFollower extends CommandBase {
     public class Task {
         public boolean isFinished;
         public void execute() {}
@@ -83,7 +83,7 @@ public class AprilPathFollower extends CommandBase {
     private boolean m_isFinished;
     private int m_taskIterator;
 
-    public AprilPathFollower(Drive drive, Pose2d pose, int aprilTag) {
+    public LinearPathFollower(Drive drive, Pose2d pose, int aprilTag) {
         m_drive = drive;
         m_pose = pose;
         m_aprilTag = aprilTag;
