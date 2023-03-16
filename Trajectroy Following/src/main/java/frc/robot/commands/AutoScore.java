@@ -37,12 +37,12 @@ public class AutoScore extends CommandBase {
         m_pneumatics.getTelescopeSolenoid().open();
         m_timer.start();
       }
-      if(m_timer.get() >= 0.7){
+      if(m_timer.get() >= 0.5){
         m_pneumatics.getIntakeSolenoid().open();
       }
-      if(m_timer.get() >= 1.5){
+      if(m_timer.get() >= 1){
         m_pneumatics.getTelescopeSolenoid().close();
-        m_pulley.set(PulleyConstants.kArmOpenStateLength);
+        m_pulley.set(PulleyConstants.kFullCloseStateLength);
         m_closing = true;
       }
     }else{

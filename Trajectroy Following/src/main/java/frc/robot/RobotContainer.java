@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.net.PortForwarder;
 
 public class RobotContainer {
@@ -55,18 +56,21 @@ public class RobotContainer {
     m_drive.setDefaultCommand(driveCommand);
 
     JoystickButton button[] = {
-      new JoystickButton(m_joystick, 10), // toggle compressor
+      new JoystickButton(m_joystick, 8), // toggle compressor
       new JoystickButton(m_helicopter, 5), // full open
       new JoystickButton(m_helicopter, 3), // full close
       new JoystickButton(m_helicopter, 1), // intake toggle
-      new JoystickButton(m_joystick, 1), // slow sparks
-      new JoystickButton(m_joystick, 2), // middle sparks
-      new JoystickButton(m_joystick, 3), // fast sparks   
+      new JoystickButton(m_joystick, 3), // slow sparks
+      new JoystickButton(m_joystick, 1), // middle sparks
+      new JoystickButton(m_joystick, 2), // fast sparks   
       new JoystickButton(m_joystick, 4), // brake mode toggle
-      new JoystickButton(m_joystick, 7), // odometry button
-      new JoystickButton(m_joystick, 8), // charging run
-      new JoystickButton(m_joystick, 9), // charging stop
-      new JoystickButton(m_joystick, 6) // pulley reset
+      new JoystickButton(m_joystick, 5), // odometry button
+      new JoystickButton(m_joystick, 6), // charging run
+      new JoystickButton(m_joystick, 7) // charging stop
+    };
+
+    POVButton pov[] = {
+      new POVButton(m_joystick, 0) // pulley reset
     };
 
     JoystickButton byHand[] = {
@@ -104,7 +108,7 @@ public class RobotContainer {
     
     button[9].onTrue(m_chargingStation);
     button[10].onTrue(new InstantCommand(() -> m_chargingStation.cancel()));
-    button[11].onTrue(new InstantCommand(() -> m_pulley.reset()));
+    pov[0].onTrue(new InstantCommand(() -> m_pulley.reset()));
     
   }
 
