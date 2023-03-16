@@ -80,7 +80,7 @@ public class AprilPathFollower extends CommandBase {
     private final Pose2d m_pose;
     private final int m_aprilTag;
     private Task[] m_taskSchedule;
-    private boolean isFinished;
+    private boolean m_isFinished;
     private int m_taskIterator;
 
     public AprilPathFollower(Drive drive, Pose2d pose, int aprilTag) {
@@ -88,7 +88,7 @@ public class AprilPathFollower extends CommandBase {
         m_pose = pose;
         m_aprilTag = aprilTag;
         m_taskIterator = 0;
-        isFinished = false;
+        m_isFinished = false;
         addRequirements(m_drive);
     }
 
@@ -121,7 +121,7 @@ public class AprilPathFollower extends CommandBase {
                 m_taskSchedule = new Task[] {
                     new RotationTask(Math.atan(m_pose.getX() / m_pose.getY()) + m_pose.getRotation().getDegrees()),
                     new DriveTask(m_pose.getY(), m_pose),
-                    new RotationTask(m_pose.getRotation().getDegrees() < 0 ? 90 : -90),
+                    new RotationTask(m_pose.getY() < 0 ? -90 : 90),
                     new DriveTask(m_pose.getX() - AprilTagConstants.kAprilTagDistance, m_pose)
                 };
             }
@@ -129,16 +129,17 @@ public class AprilPathFollower extends CommandBase {
         else {
             // OUTSIDE
             m_taskSchedule = new Task[] {
+                new RotationTask(-(90 - (Math.atan(m_pose.getX() / m_pose.getY()) + m_pose.getRotation().getDegrees()))),
                 new DriveTask(m_pose.getX() - AprilTagConstants.kFieldLeftUp.getX(), m_pose),
-                new RotationTask(Math.atan(m_pose.getX() / m_pose.getY()) + m_pose.getRotation().getDegrees()),
+                new RotationTask(m_pose.getY() < 0 ? 90 : -90),
                 new DriveTask(m_pose.getY(), m_pose),
-                new RotationTask(m_pose.getRotation().getDegrees() < 0 ? 90 : -90),
+                new RotationTask(m_pose.getY() < 0 ? -90 : 90),
                 new DriveTask(AprilTagConstants.kFieldLeftUp.getX() - AprilTagConstants.kAprilTagDistance, m_pose)
             };
         }
 
         m_taskIterator = 0;
-        isFinished = false;
+        m_isFinished = false;
     }
 
     @Override
@@ -146,7 +147,7 @@ public class AprilPathFollower extends CommandBase {
         m_taskSchedule[m_taskIterator].execute();
         if(m_taskSchedule[m_taskIterator].isFinished) {
             if(m_taskSchedule.length == m_taskIterator)
-                isFinished = true;
+                m_isFinished = true;
             else
                 m_taskIterator++;
         }
@@ -159,6 +160,6 @@ public class AprilPathFollower extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return isFinished;
+        return m_isFinished;
     }
 }
