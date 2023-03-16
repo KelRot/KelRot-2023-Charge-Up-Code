@@ -24,6 +24,7 @@ public class AutoScore extends CommandBase {
     m_timer.reset();
     m_finished = false;
     m_closing = false;
+    m_pulley.reset();
     m_pulley.set(PulleyConstants.kFullOpenStateLength);
   }
 
@@ -37,10 +38,10 @@ public class AutoScore extends CommandBase {
         m_pneumatics.getTelescopeSolenoid().open();
         m_timer.start();
       }
-      if(m_timer.get() >= 0.5){
+      if(m_timer.get() >= 0.1){
         m_pneumatics.getIntakeSolenoid().open();
       }
-      if(m_timer.get() >= 1){
+      if(m_timer.get() >= 0.8){
         m_pneumatics.getTelescopeSolenoid().close();
         m_pulley.set(PulleyConstants.kFullCloseStateLength);
         m_closing = true;
@@ -54,7 +55,9 @@ public class AutoScore extends CommandBase {
   }
 
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    m_pulley.reset();
+  }
 
   @Override
   public boolean isFinished() {

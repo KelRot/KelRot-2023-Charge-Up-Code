@@ -1,11 +1,13 @@
 package frc.robot;
 
+import frc.robot.commands.AlignCommand;
 import frc.robot.commands.AutoScore;
 import frc.robot.commands.ChargingStation;
 import frc.robot.commands.CyclindersFullClose;
 import frc.robot.commands.CyclindersFullOpen;
 import frc.robot.commands.DriveCommand;
 import frc.robot.paths.P;
+import frc.robot.subsystems.Align;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Pneumatics;
 import frc.robot.subsystems.Pulley;
@@ -13,14 +15,13 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.net.PortForwarder;
 
 public class RobotContainer {
   private final Drive m_drive = new Drive();
-
+  private final Align m_align = new Align();
   private final Pneumatics m_pneumatics = new Pneumatics();
   private final Pulley m_pulley = new Pulley();
 
@@ -28,6 +29,8 @@ public class RobotContainer {
   private final Joystick m_helicopter = new Joystick(1);
 
   private final DriveCommand driveCommand = new DriveCommand(m_drive, m_joystick);
+
+  private final AlignCommand m_alignCommand = new AlignCommand(m_drive, m_align);
 
   private final CyclindersFullOpen m_fullOpenCommand = new CyclindersFullOpen(m_pneumatics, m_pulley);
   private final CyclindersFullClose m_fullCloseCommand = new CyclindersFullClose(m_pneumatics, m_pulley);
@@ -70,7 +73,8 @@ public class RobotContainer {
     };
 
     POVButton pov[] = {
-      new POVButton(m_joystick, 0) // pulley reset
+      new POVButton(m_joystick, 0), // pulley reset
+      new POVButton(m_joystick, 180) // align command
     };
 
     JoystickButton byHand[] = {
@@ -109,11 +113,14 @@ public class RobotContainer {
     button[9].onTrue(m_chargingStation);
     button[10].onTrue(new InstantCommand(() -> m_chargingStation.cancel()));
     pov[0].onTrue(new InstantCommand(() -> m_pulley.reset()));
+    pov[1].onTrue(m_alignCommand);
+
+
     
   }
 
   public Command getAutonomousCommand() {
-    return new SequentialCommandGroup(m_autoScore, m_chargingStation);
+    return m_autoScore;
     /*Trajectory autoTrajectory = TrajectoryGenerator.generateTrajectory(
       P.auto21.kStart,
 

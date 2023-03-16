@@ -99,4 +99,11 @@ public final class Constants {
     public static final double kI = 0.0;
     public static final double kD = 0.0;
   }
+
+  public static class AlignConstants {
+    public static final double kP = 0.0; // anguler
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+    public static final double kTolerance = 2.0; // deg
+  }
 }

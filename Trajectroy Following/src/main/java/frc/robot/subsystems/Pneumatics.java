@@ -51,8 +51,8 @@ public class Pneumatics extends SubsystemBase {
     }
   };
 
-  public Pneumatics() {
-    m_compressor.enableDigital();
+  public Pneumatics() { 
+    m_compressor.disable();
 
     dArmSolenoid = new Solenoid(PneumaticsConstants.kArmPins, "Arm");
     dTelescopSolenoid = new Solenoid(PneumaticsConstants.kTelescopePins, "Telescope");
