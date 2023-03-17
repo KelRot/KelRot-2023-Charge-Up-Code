@@ -70,7 +70,7 @@ public final class Constants {
     public static final double kI = 0.0;
     public static final double kD = 0.04;
 
-    public static final double kRequiredVoltage = -7.0; // required voltage to beat charging station
+    public static final double kRequiredVoltage = -7.5; // required voltage to beat charging station
     public static final double kRequiredAngle = 13.5;
   }
 
@@ -83,6 +83,7 @@ public final class Constants {
     public static final double kOnGroundStateLength = 1350.0;
     public static final double kArmOpenStateLength = 250.0;
     public static final double kTolerance = 50.0;
+    public static final double kMomentumTolerance = 200.0;
 
     public static final double kTime = 0.0;
     public static final double kTelescopeToIntake = 0.7;

@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.PulleyConstants;
 import frc.robot.subsystems.Pneumatics;
@@ -9,7 +10,7 @@ import frc.robot.subsystems.Pulley;
 public class AutoScore extends CommandBase {
   private final Pneumatics m_pneumatics;
   private final Pulley m_pulley;
-  private final Timer m_timer = new Timer();
+  private final Timer m_timer = new Timer(), m_autoTimer = new Timer();
   private boolean m_finished = false, m_closing;
 
   public AutoScore(Pneumatics pneumatics, Pulley pulley) {
@@ -22,8 +23,13 @@ public class AutoScore extends CommandBase {
   public void initialize() {
     m_timer.stop();
     m_timer.reset();
+
+    m_autoTimer.reset();
+    m_autoTimer.start();
+    
     m_finished = false;
     m_closing = false;
+
     m_pulley.reset();
     m_pulley.set(PulleyConstants.kFullOpenStateLength);
   }
@@ -34,14 +40,12 @@ public class AutoScore extends CommandBase {
       if(m_pulley.getDistance() >= PulleyConstants.kArmOpenStateLength){
         m_pneumatics.getArmSolenoid().open();
       }
-      if(m_pulley.getDistance() >= PulleyConstants.kFullOpenStateLength - PulleyConstants.kTolerance * 5){
+      if(m_pulley.getDistance() >= PulleyConstants.kFullOpenStateLength - PulleyConstants.kMomentumTolerance){
         m_pneumatics.getTelescopeSolenoid().open();
+        m_pneumatics.getIntakeSolenoid().open();
         m_timer.start();
       }
-      if(m_timer.get() >= 0.1){
-        m_pneumatics.getIntakeSolenoid().open();
-      }
-      if(m_timer.get() >= 0.8){
+      if(m_timer.get() >= 0.2){
         m_pneumatics.getTelescopeSolenoid().close();
         m_pulley.set(PulleyConstants.kFullCloseStateLength);
         m_closing = true;
@@ -52,6 +56,7 @@ public class AutoScore extends CommandBase {
         m_finished = true;
       }
     }
+    SmartDashboard.putNumber("Auto Time", m_autoTimer.get());
   }
 
   @Override

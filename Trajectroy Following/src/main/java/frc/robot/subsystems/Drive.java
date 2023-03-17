@@ -173,13 +173,6 @@ public class Drive extends SubsystemBase {
 
   public double getAverageDistance() {return (getDistance()[0] + getDistance()[1]) / 2.0;}
 
-  public void printOutputs() {
-    SmartDashboard.putNumber("Left Front Output", m_leftFrontMotor.getAppliedOutput() * 12.0); 
-    SmartDashboard.putNumber("Left Back Output", m_leftBackMotor.getAppliedOutput() * 12.0); 
-    SmartDashboard.putNumber("Right Front Output", m_rightFrontMotor.getAppliedOutput() * 12.0); 
-    SmartDashboard.putNumber("Right Back Output", m_rightBackMotor.getAppliedOutput() * 12.0); 
-  }
-
   public void printDistance(){
     SmartDashboard.putNumber("Left encoder", getDistance()[0]);
     SmartDashboard.putNumber("Right encoder", getDistance()[1]);
@@ -259,7 +252,6 @@ public class Drive extends SubsystemBase {
     printPose();
     printAngle();
     printDistance();
-    printOutputs();
   }
 
   @Override
