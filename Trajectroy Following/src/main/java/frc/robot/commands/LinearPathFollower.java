@@ -77,19 +77,27 @@ public class LinearPathFollower extends CommandBase {
     }
 
     private final Drive m_drive;
-    private final Pose2d m_pose;
-    private final int m_aprilTag;
+    private Pose2d m_pose;
+    private int m_aprilTag;
     private Task[] m_taskSchedule;
+    private boolean m_isStarted;
     private boolean m_isFinished;
     private int m_taskIterator;
 
-    public LinearPathFollower(Drive drive, Pose2d pose, int aprilTag) {
+    public LinearPathFollower(Drive drive) {
         m_drive = drive;
+        m_taskIterator = 0;
+        m_isStarted = false;
+        m_isFinished = false;
+        addRequirements(m_drive);
+    }
+
+    public void start(Pose2d pose, int aprilTag) {
         m_pose = pose;
         m_aprilTag = aprilTag;
         m_taskIterator = 0;
         m_isFinished = false;
-        addRequirements(m_drive);
+        m_isStarted = true;
     }
 
     public Translation2d getAprilTagTranslation(int aprilTag) {
@@ -107,37 +115,38 @@ public class LinearPathFollower extends CommandBase {
 
     @Override
     public void initialize() {
-        if (m_pose.getX() < LinearPathConstants.kFieldLeftUp.getX() && m_pose.getX() > LinearPathConstants.kFieldRightDown.getX() &&
-            m_pose.getY() < LinearPathConstants.kFieldLeftUp.getY() && m_pose.getY() > LinearPathConstants.kFieldRightDown.getY()) {
-            if(Math.abs(getAprilTagTranslation(m_aprilTag).getY() - m_pose.getY()) <= LinearPathConstants.kAlignTolerance) {
-                // ACROSS
-                m_taskSchedule = new Task[] {
-                    new RotationTask(m_pose.getRotation().getDegrees()),
-                    new DriveTask(m_pose.getX() - LinearPathConstants.kAprilTagDistance, m_pose)
-                };
-            }
+        if(m_isStarted) {
+            if (m_pose.getX() < LinearPathConstants.kFieldLeftUp.getX() && m_pose.getX() > LinearPathConstants.kFieldRightDown.getX() &&
+                m_pose.getY() < LinearPathConstants.kFieldLeftUp.getY() && m_pose.getY() > LinearPathConstants.kFieldRightDown.getY()) {
+                if(Math.abs(getAprilTagTranslation(m_aprilTag).getY() - m_pose.getY()) <= LinearPathConstants.kAlignTolerance) {
+                    // ACROSS
+                    m_taskSchedule = new Task[] {
+                        new RotationTask(m_pose.getRotation().getDegrees()),
+                        new DriveTask(m_pose.getX() - LinearPathConstants.kAprilTagDistance, m_pose)
+                    };
+                }
+                else {
+                    // INSIDE
+                    m_taskSchedule = new Task[] {
+                        new RotationTask(Math.atan(m_pose.getX() / m_pose.getY()) + m_pose.getRotation().getDegrees()),
+                        new DriveTask(m_pose.getY(), m_pose),
+                        new RotationTask(m_pose.getY() < 0 ? -90 : 90),
+                        new DriveTask(m_pose.getX() - LinearPathConstants.kAprilTagDistance, m_pose)
+                    };
+                }
+            } 
             else {
-                // INSIDE
+                // OUTSIDE
                 m_taskSchedule = new Task[] {
-                    new RotationTask(Math.atan(m_pose.getX() / m_pose.getY()) + m_pose.getRotation().getDegrees()),
+                    new RotationTask(-(90 - (Math.atan(m_pose.getX() / m_pose.getY()) + m_pose.getRotation().getDegrees()))),
+                    new DriveTask(m_pose.getX() - LinearPathConstants.kFieldLeftUp.getX(), m_pose),
+                    new RotationTask(m_pose.getY() < 0 ? 90 : -90),
                     new DriveTask(m_pose.getY(), m_pose),
                     new RotationTask(m_pose.getY() < 0 ? -90 : 90),
-                    new DriveTask(m_pose.getX() - LinearPathConstants.kAprilTagDistance, m_pose)
+                    new DriveTask(LinearPathConstants.kFieldLeftUp.getX() - LinearPathConstants.kAprilTagDistance, m_pose)
                 };
             }
-        } 
-        else {
-            // OUTSIDE
-            m_taskSchedule = new Task[] {
-                new RotationTask(-(90 - (Math.atan(m_pose.getX() / m_pose.getY()) + m_pose.getRotation().getDegrees()))),
-                new DriveTask(m_pose.getX() - LinearPathConstants.kFieldLeftUp.getX(), m_pose),
-                new RotationTask(m_pose.getY() < 0 ? 90 : -90),
-                new DriveTask(m_pose.getY(), m_pose),
-                new RotationTask(m_pose.getY() < 0 ? -90 : 90),
-                new DriveTask(LinearPathConstants.kFieldLeftUp.getX() - LinearPathConstants.kAprilTagDistance, m_pose)
-            };
         }
-
         m_taskIterator = 0;
         m_isFinished = false;
     }
@@ -155,7 +164,7 @@ public class LinearPathFollower extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
-
+        m_isStarted = false;
     }
 
     @Override

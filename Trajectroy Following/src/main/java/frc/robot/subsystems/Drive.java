@@ -7,13 +7,16 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.EncoderConstants;
+import frc.robot.Constants.TrajectoryConstants;
 import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
@@ -33,6 +36,10 @@ public class Drive extends SubsystemBase {
   private final MotorControllerGroup m_leftMotorControllerGroup, m_rightMotorControllerGroup;
 
   private final DifferentialDrive m_drive;
+
+  private final DifferentialDriveKinematics m_kinematics;
+
+  private final DifferentialDrivePoseEstimator m_poseEstimator;
 
   public final Field2d m_field = new Field2d();
 
@@ -77,6 +84,10 @@ public class Drive extends SubsystemBase {
     m_rightBackMotor.setInverted(DriveConstants.isRightInverted);
 
     m_drive = new DifferentialDrive(m_leftMotorControllerGroup, m_rightMotorControllerGroup);
+
+    m_kinematics = new DifferentialDriveKinematics(TrajectoryConstants.kTrackwidthMeters);
+
+    m_poseEstimator = new DifferentialDrivePoseEstimator(m_kinematics, new Rotation2d().fromDegrees(getAngle()), 0.0, 0.0, new Pose2d());
 
     m_leftEncoder = new Encoder(EncoderConstants.kLeftA, EncoderConstants.kLeftB);
     m_rightEncoder = new Encoder(EncoderConstants.kRightA, EncoderConstants.kRightB);

@@ -1,5 +1,6 @@
 package frc.robot;
 
+import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.AlignCommand;
 import frc.robot.commands.AutoScore;
 import frc.robot.commands.ChargingStation;
@@ -8,17 +9,24 @@ import frc.robot.commands.CyclindersFullOpen;
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.OnePieceAutonomous;
 import frc.robot.commands.OnePieceChargingMobility;
+import frc.robot.commands.LinearPathFollower;
 import frc.robot.paths.P;
 import frc.robot.subsystems.Align;
+import frc.robot.subsystems.AprilTagVision;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Pneumatics;
 import frc.robot.subsystems.Pulley;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.net.PortForwarder;
 
 public class RobotContainer {
@@ -45,6 +53,9 @@ public class RobotContainer {
   private final ChargingStation m_chargingStation = new ChargingStation(m_drive);
   private final AutoScore m_autoScore = new AutoScore(m_pneumatics, m_pulley);
   private final OnePieceAutonomous m_onePieceAuto = new OnePieceAutonomous(m_drive, m_pneumatics, m_pulley);
+  private final AprilTagVision m_aprilTagVision = new AprilTagVision(VisionConstants.kUpperCamera);
+  private final LinearPathFollower m_linearPathFollower = new LinearPathFollower(m_drive);
+
   private final OnePieceChargingMobility m_onePieceC = new OnePieceChargingMobility(m_drive, m_pneumatics, m_pulley);
 
   
@@ -55,9 +66,19 @@ public class RobotContainer {
     m_chargingStation
   );*/
 
+  public LinearPathFollower startLinearPathFollower() {
+    m_linearPathFollower.start(
+            new Pose2d(m_aprilTagVision.getPose().getX(), m_aprilTagVision.getPose().getY(), Rotation2d.fromDegrees(-m_aprilTagVision.getYaw())), 
+            m_aprilTagVision.getId());
+    return m_linearPathFollower;
+  }
+
   public RobotContainer() {
     PortForwarder.add(5800, "photonvision.local", 5800);
     configureBindings();
+    
+    SmartDashboard.putData("Charging Station Balance", new ChargingStation(m_drive));
+    SmartDashboard.putData("AutoScore", new AutoScore(m_pneumatics, m_pulley));
   }
 
   private void configureBindings() {
@@ -87,15 +108,21 @@ public class RobotContainer {
       new JoystickButton(m_helicopter, 10), //telescope toogle
       new JoystickButton(m_helicopter, 12), //arm toogle
       new JoystickButton(m_helicopter, 4), //pulley close
-      new JoystickButton(m_helicopter, 6) //pulley open
+      new JoystickButton(m_helicopter, 6), //pulley open
+      new JoystickButton(m_helicopter, 7),
+      new JoystickButton(m_helicopter, 9)
     };
 
     byHand[0].whileTrue(new InstantCommand(() -> m_pneumatics.getIntakeSolenoid().toggle()));
     byHand[1].whileTrue(new InstantCommand(() -> m_pneumatics.getTelescopeSolenoid().toggle())); 
-    byHand[2].whileTrue(new InstantCommand(() -> m_pneumatics.getArmSolenoid().toggle())); 
+    byHand[2].whileTrue(new InstantCommand(() -> m_pneumatics.getArmSolenoid().toggle()));
 
     byHand[3].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
     byHand[4].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
+
+    byHand[5].onTrue(m_aprilTagVision.hasTargets ? 
+      startLinearPathFollower() : new InstantCommand(() -> SmartDashboard.putString("Error", "No targets found")));
+    byHand[6].onTrue(new InstantCommand (() -> m_linearPathFollower.cancel()));
 
     button[0].whileTrue(new InstantCommand(() -> m_pneumatics.toggleCompressor()));
     button[1].onTrue(m_fullOpenCommand);
