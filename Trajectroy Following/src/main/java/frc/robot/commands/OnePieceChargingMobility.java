@@ -124,6 +124,7 @@ public class OnePieceChargingMobility extends CommandBase {
     m_drive.stopMotors();
     m_drive.setGyroAxis(IMUAxis.kZ);
     m_drive.setIdleModeBrake(true);
+    m_pulley.reset();
   }
 
   @Override
