@@ -7,19 +7,20 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.ChargingConstants;
 import frc.robot.Constants.PulleyConstants;
+import frc.robot.paths.P;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Pneumatics;
 import frc.robot.subsystems.Pulley;
 
-public class OnePieceAutonomous extends CommandBase {
+public class OnePieceChargingMobility extends CommandBase {
   private final Drive m_drive;
   private final Pneumatics m_pneumatics;
   private final Pulley m_pulley;
   private final PIDController m_pid;
   private final Timer m_timer = new Timer(), m_autoTimer = new Timer();
-  private boolean m_finished, m_closing, m_isReached;
+  private boolean m_finished, m_closing, m_isReached, m_isPassedCS;
 
-  public OnePieceAutonomous(Drive drive, Pneumatics pneumatics, Pulley pulley) {
+  public OnePieceChargingMobility(Drive drive, Pneumatics pneumatics, Pulley pulley) {
     m_pneumatics = pneumatics;
     m_pulley = pulley;
     m_drive = drive;
@@ -27,7 +28,7 @@ public class OnePieceAutonomous extends CommandBase {
     m_pid = new PIDController(ChargingConstants.kP, ChargingConstants.kI, ChargingConstants.kD);
     m_pid.setTolerance(6, 5);
 
-    m_finished = m_closing = m_isReached = false;
+    m_finished = m_closing = m_isReached = m_isPassedCS = false;
 
     SmartDashboard.putString("One Piece Auto", "Not begun");
 
@@ -72,18 +73,30 @@ public class OnePieceAutonomous extends CommandBase {
         SmartDashboard.putString("One Piece Auto", "Piece Scored");
       }
     }else{
-      
       if(m_pulley.getDistance() <= PulleyConstants.kOnGroundStateLength){
         m_pneumatics.getArmSolenoid().close();
       }
-      if(m_isReached == false) {
+      if(m_isPassedCS == false){
         m_drive.tankDriveVolts(ChargingConstants.kRequiredVoltage, ChargingConstants.kRequiredVoltage);
-        if(Math.abs(m_drive.getAngle()) > ChargingConstants.kRequiredAngle)
+        if(Math.abs(m_drive.getAngle()) > ChargingConstants.kRequiredAngle){
           m_isReached = true;
-      }
-      else {
-        double volts = m_pid.calculate(m_drive.getAngle(), 0);
-        m_drive.tankDriveVolts(volts, volts);
+        }
+        if(m_isReached == true){
+          if(Math.abs(m_drive.getAngle()) <= 1){
+            m_isPassedCS = true;
+            m_isReached = false;
+          }
+        }
+      }else{
+        if(m_isReached == false) {
+          m_drive.tankDriveVolts(-ChargingConstants.kRequiredVoltage, -ChargingConstants.kRequiredVoltage);
+          if(Math.abs(m_drive.getAngle()) > ChargingConstants.kRequiredAngle)
+            m_isReached = true;
+        }
+        else {
+          double volts = m_pid.calculate(m_drive.getAngle(), 0);
+          m_drive.tankDriveVolts(volts, volts);
+        }
       }
     }
     
