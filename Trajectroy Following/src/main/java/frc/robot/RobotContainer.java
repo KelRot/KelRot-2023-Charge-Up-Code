@@ -7,6 +7,7 @@ import frc.robot.commands.CyclindersFullClose;
 import frc.robot.commands.CyclindersFullOpen;
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.OnePieceAutonomous;
+import frc.robot.commands.OnePieceChargingMobility;
 import frc.robot.paths.P;
 import frc.robot.subsystems.Align;
 import frc.robot.subsystems.Drive;
@@ -44,6 +45,7 @@ public class RobotContainer {
   private final ChargingStation m_chargingStation = new ChargingStation(m_drive);
   private final AutoScore m_autoScore = new AutoScore(m_pneumatics, m_pulley);
   private final OnePieceAutonomous m_onePieceAuto = new OnePieceAutonomous(m_drive, m_pneumatics, m_pulley);
+  private final OnePieceChargingMobility m_onePieceC = new OnePieceChargingMobility(m_drive, m_pneumatics, m_pulley);
 
   
 
@@ -121,7 +123,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return m_onePieceAuto;
+    return m_onePieceC;
     /*Trajectory autoTrajectory = TrajectoryGenerator.generateTrajectory(
       P.auto21.kStart,
 

@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.ChargingConstants;
 import frc.robot.Constants.PulleyConstants;
-import frc.robot.paths.P;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Pneumatics;
 import frc.robot.subsystems.Pulley;
@@ -18,7 +17,7 @@ public class OnePieceChargingMobility extends CommandBase {
   private final Pulley m_pulley;
   private final PIDController m_pid;
   private final Timer m_timer = new Timer(), m_autoTimer = new Timer();
-  private boolean m_finished, m_closing, m_isReached, m_isPassedCS;
+  private boolean m_finished, m_closing, m_isReached, m_isPassedCS, m_gettingOff, m_climbing;
 
   public OnePieceChargingMobility(Drive drive, Pneumatics pneumatics, Pulley pulley) {
     m_pneumatics = pneumatics;
@@ -27,8 +26,6 @@ public class OnePieceChargingMobility extends CommandBase {
 
     m_pid = new PIDController(ChargingConstants.kP, ChargingConstants.kI, ChargingConstants.kD);
     m_pid.setTolerance(6, 5);
-
-    m_finished = m_closing = m_isReached = m_isPassedCS = false;
 
     SmartDashboard.putString("One Piece Auto", "Not begun");
 
@@ -41,13 +38,14 @@ public class OnePieceChargingMobility extends CommandBase {
 
     m_timer.stop();
     m_timer.reset();
+    m_pulley.reset();
     m_pulley.set(PulleyConstants.kFullOpenStateLength);
     m_drive.setNormalMode();
     m_drive.setGyroAxis(IMUAxis.kY);
     m_drive.resetGyro();
     m_pid.reset();
 
-    m_closing = false;
+    m_finished = m_closing = m_isReached = m_isPassedCS = m_climbing = m_gettingOff = false;
 
     m_autoTimer.reset();
     m_autoTimer.start();
@@ -79,17 +77,31 @@ public class OnePieceChargingMobility extends CommandBase {
       if(m_isPassedCS == false){
         m_drive.tankDriveVolts(ChargingConstants.kRequiredVoltage, ChargingConstants.kRequiredVoltage);
         if(Math.abs(m_drive.getAngle()) > ChargingConstants.kRequiredAngle){
-          m_isReached = true;
+          m_climbing = true;
+          SmartDashboard.putString("One Piece Auto", "Climbing");
+        }
+        if(m_climbing == true){
+          if(Math.abs(m_drive.getAngle()) <= 1){
+            m_isReached = true;
+            SmartDashboard.putString("One Piece Auto", "On charging");
+          }
         }
         if(m_isReached == true){
+          if(Math.abs(m_drive.getAngle()) > ChargingConstants.kRequiredAngle){
+            m_gettingOff = true;
+            SmartDashboard.putString("One Piece Auto", "Getting off");
+          }
+        }
+        if(m_gettingOff == true){
           if(Math.abs(m_drive.getAngle()) <= 1){
             m_isPassedCS = true;
             m_isReached = false;
+            SmartDashboard.putString("One Piece Auto", "Passed CS");
           }
         }
       }else{
         if(m_isReached == false) {
-          m_drive.tankDriveVolts(-ChargingConstants.kRequiredVoltage, -ChargingConstants.kRequiredVoltage);
+          m_drive.tankDriveVolts(ChargingConstants.kRequiredVoltageBack, ChargingConstants.kRequiredVoltageBack);
           if(Math.abs(m_drive.getAngle()) > ChargingConstants.kRequiredAngle)
             m_isReached = true;
         }
@@ -99,14 +111,14 @@ public class OnePieceChargingMobility extends CommandBase {
         }
       }
     }
-    
+    SmartDashboard.putBoolean("Is reached", m_isReached);
     SmartDashboard.putNumber("Auto Time", m_autoTimer.get());
   }
 
   @Override
   public void end(boolean interrupted) {
     SmartDashboard.putString("Charging State", "Finished");
-    
+    m_drive.stopMotors();
     m_drive.setGyroAxis(IMUAxis.kZ);
   }
 

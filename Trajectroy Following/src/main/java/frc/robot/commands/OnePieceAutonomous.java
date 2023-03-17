@@ -40,6 +40,7 @@ public class OnePieceAutonomous extends CommandBase {
 
     m_timer.stop();
     m_timer.reset();
+    m_pulley.reset();
     m_pulley.set(PulleyConstants.kFullOpenStateLength);
     m_drive.setNormalMode();
     m_drive.setGyroAxis(IMUAxis.kY);

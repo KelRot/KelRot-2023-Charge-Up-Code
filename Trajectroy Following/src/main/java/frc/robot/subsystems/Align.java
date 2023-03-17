@@ -18,8 +18,7 @@ public class Align extends SubsystemBase{
 
   //drive motors
 
-  public Align(){
-  }
+  public Align(){}
 
   public void changePipeline(boolean is_cube){
     if(is_cube)

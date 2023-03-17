@@ -67,6 +67,7 @@ public final class Constants {
     public static final double kD = 0.04;
 
     public static final double kRequiredVoltage = -7.5; // required voltage to beat charging station
+    public static final double kRequiredVoltageBack = 6.5; // required voltage to beat charging station
     public static final double kRequiredAngle = 13.5;
   }
 
