@@ -1,5 +1,6 @@
 package frc.robot;
 
+import frc.robot.Constants.TrajectoryConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.AlignCommand;
 import frc.robot.commands.AutoScore;
@@ -21,13 +22,20 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.net.PortForwarder;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class RobotContainer {
   private final Drive m_drive = new Drive();
@@ -46,25 +54,22 @@ public class RobotContainer {
   private final CyclindersFullOpen m_fullOpenCommand = new CyclindersFullOpen(m_pneumatics, m_pulley);
   private final CyclindersFullClose m_fullCloseCommand = new CyclindersFullClose(m_pneumatics, m_pulley);
 
-  private final Command m_pathFollowerLine = P.generateRamsete(m_drive, P.straightLine);
-  private final Command m_pathFollowerS = P.generateRamsete(m_drive, P.S);
+  /* Auto commands */
 
-  private final Command m_pathFollower21Path = P.generateRamsete(m_drive, P.auto21);
   private final ChargingStation m_chargingStation = new ChargingStation(m_drive);
-  private final AutoScore m_autoScore = new AutoScore(m_pneumatics, m_pulley);
-  private final OnePieceAutonomous m_onePieceAuto = new OnePieceAutonomous(m_drive, m_pneumatics, m_pulley);
-  private final AprilTagVision m_aprilTagVision = new AprilTagVision(VisionConstants.kUpperCamera);
-  private final LinearPathFollower m_linearPathFollower = new LinearPathFollower(m_drive);
 
+  private final AutoScore m_autoScore = new AutoScore(m_pneumatics, m_pulley);
+  
   private final OnePieceChargingMobility m_onePieceC = new OnePieceChargingMobility(m_drive, m_pneumatics, m_pulley);
 
+  private final OnePieceAutonomous m_onePieceAuto = new OnePieceAutonomous(m_drive, m_pneumatics, m_pulley);
   
+  private final AprilTagVision m_aprilTagVision = new AprilTagVision(VisionConstants.kUpperCamera);
+  
+  private final LinearPathFollower m_linearPathFollower = new LinearPathFollower(m_drive);
 
-  /*private final SequentialCommandGroup m_21auto = new SequentialCommandGroup(
-    m_autoScore,
-    m_pathFollower21Path,
-    m_chargingStation
-  );*/
+  
+  
 
   public LinearPathFollower startLinearPathFollower() {
     m_linearPathFollower.start(
@@ -100,7 +105,8 @@ public class RobotContainer {
 
     POVButton pov[] = {
       new POVButton(m_joystick, 0), // pulley reset
-      new POVButton(m_joystick, 180) // align command
+      new POVButton(m_joystick, 180), // pulley open
+      new POVButton(m_joystick, 90) // pulley close
     };
 
     JoystickButton byHand[] = {
@@ -145,20 +151,21 @@ public class RobotContainer {
     button[10].onTrue(new InstantCommand(() -> m_chargingStation.cancel()));
     pov[0].onTrue(new InstantCommand(() -> m_pulley.reset()));
 
-
+    pov[1].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
+    pov[2].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
     
   }
 
   public Command getAutonomousCommand() {
-    return m_onePieceC;
+    return P.generateRamsete(m_drive, P.straightLine);
     /*Trajectory autoTrajectory = TrajectoryGenerator.generateTrajectory(
-      P.auto21.kStart,
+      P.S.kStart,
 
-      P.auto21.kWayPoints,
+      P.S.kWayPoints,
       
-      P.auto21.kEnd,
+      P.S.kEnd,
 
-      P.auto21.kConfig
+      P.S.kConfig
     );
 
     m_drive.m_field.getObject("traj").setTrajectory(autoTrajectory);
@@ -168,7 +175,7 @@ public class RobotContainer {
     
     
 
-    m_ramseteController.setEnabled(false);
+    //m_ramseteController.setEnabled(false);
 
     var table = NetworkTableInstance.getDefault().getTable("SmartDashboard");
     var leftReference = table.getEntry("left_reference");
@@ -214,11 +221,12 @@ public class RobotContainer {
     
     m_drive.resetOdometry(autoTrajectory.getInitialPose());
 
-    return m_ramsete.andThen(() -> m_drive.stopMotors()); */
+    return m_ramsete.andThen(() -> m_drive.stopMotors());*/
   }
 
   public void testPeriodic() {
     var volts = SmartDashboard.getNumber("Test Volts", 0);
     m_drive.tankDriveVolts(volts, volts);
   }
+
 }

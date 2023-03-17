@@ -108,6 +108,9 @@ public class OnePieceChargingMobility extends CommandBase {
         else {
           double volts = m_pid.calculate(m_drive.getAngle(), 0);
           m_drive.tankDriveVolts(volts, volts);
+          if(m_pid.atSetpoint()){
+            m_finished = true;
+          }
         }
       }
     }
@@ -120,10 +123,11 @@ public class OnePieceChargingMobility extends CommandBase {
     SmartDashboard.putString("Charging State", "Finished");
     m_drive.stopMotors();
     m_drive.setGyroAxis(IMUAxis.kZ);
+    m_drive.setIdleModeBrake(true);
   }
 
   @Override
   public boolean isFinished() {
-    return false;
+    return m_finished;
   }
 }

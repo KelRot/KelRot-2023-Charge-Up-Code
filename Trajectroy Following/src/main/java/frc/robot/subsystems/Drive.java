@@ -114,7 +114,7 @@ public class Drive extends SubsystemBase {
   /* Drive methods */
 
   public void drive(Joystick js) {
-    m_drive.curvatureDrive(-js.getRawAxis(1), js.getRawAxis(0) * 0.5, true);
+    m_drive.curvatureDrive(-js.getRawAxis(1), js.getRawAxis(0) * 0.3, true);
   }
 
   public void curvatureDrive(double speed, double rot) {
@@ -147,6 +147,15 @@ public class Drive extends SubsystemBase {
 
   public double getMaxOutput() {
     return m_leftFrontMotor.getVoltageCompensationNominalVoltage();
+  }
+
+  public void setIdleModeBrake(boolean brake){
+    m_brake = brake;
+    if(m_brake == false){
+      setSparkMode(IdleMode.kCoast);
+    }else{
+      setSparkMode(IdleMode.kBrake);
+    }
   }
 
   public void changeIdleMode(){
@@ -183,16 +192,16 @@ public class Drive extends SubsystemBase {
 
   /* Gyro methods */
 
-  public double getAngle() {return m_gyro.getAngle();}
+  public double getAngle() {return -m_gyro.getAngle();}
 
   public void resetGyro() {m_gyro.reset();}
 
   public void setGyroAxis(IMUAxis yaw_axis) {m_gyro.setYawAxis(yaw_axis);}
 
-  public double getTurnRate() {return m_gyro.getRate();}
+  public double getTurnRate() {return -m_gyro.getRate();}
 
   public void printAngle() {
-    SmartDashboard.putNumber("Gyro Angle", m_gyro.getAngle());
+    SmartDashboard.putNumber("Gyro Angle", -m_gyro.getAngle());
   }
 
   /* Odometry methods */
@@ -218,6 +227,8 @@ public class Drive extends SubsystemBase {
       pose
     );
   }
+
+  /* Speed modes */
 
   public void setSlowMode() {
     setMaxOutput(4.0);
@@ -267,4 +278,5 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void simulationPeriodic() {}
+
 }

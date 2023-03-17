@@ -74,16 +74,16 @@ public class P {
   );
 
   public static Path auto21 = new Path(
-    new Pose2d(1.88, 4.38, new Rotation2d(180)), 
+    new Pose2d(0, 0, new Rotation2d(0)), 
     Arrays.asList(
-      new Translation2d(5.31, 4.59)
+      new Translation2d(1, 1),
+      new Translation2d(2, -1)
     ),
-    new Pose2d(5.84, 3.07, Rotation2d.fromDegrees(0)),
-    true
+    new Pose2d(3, 0, new Rotation2d(0)),
+    false 
   );
 
   public static Command generateRamsete(Drive m_drive, Path m_path){
-
     Trajectory autoTrajectory = TrajectoryGenerator.generateTrajectory(
       m_path.kStart,
 
@@ -145,8 +145,7 @@ public class P {
     );
     
     m_drive.resetOdometry(autoTrajectory.getInitialPose());
-
-    return m_ramsete.andThen(() -> m_drive.stopMotors());
+    return m_ramsete;
   }
 
   public P(){}
