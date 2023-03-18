@@ -37,10 +37,10 @@ public class ConeSecondNode extends CommandBase {
       m_pneumatics.getArmSolenoid().open();
       m_timer.start();
     }
-    if(m_timer.get() >= 1.0){
+    if(m_timer.get() >= 3.0){
       m_pneumatics.getIntakeSolenoid().open();
     }
-    if(m_timer.get() >= 1.3){
+    if(m_timer.get() >= 3.3){
       m_pneumatics.getArmSolenoid().close();
       m_pulley.set(PulleyConstants.kFullCloseStateLength);
       m_finished = true;

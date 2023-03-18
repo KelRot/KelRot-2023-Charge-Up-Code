@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.PulleyConstants;
+import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Pneumatics;
 import frc.robot.subsystems.Pulley;
 
@@ -11,11 +12,13 @@ public class CubeThirdNode extends CommandBase {
   private final Pneumatics m_pneumatics;
   private final Pulley m_pulley;
   private final Timer m_timer = new Timer();
+  private final Drive m_drive;
   private boolean m_finished = false, m_closing;
 
-  public CubeThirdNode(Pneumatics pneumatics, Pulley pulley) {
+  public CubeThirdNode(Pneumatics pneumatics, Pulley pulley, Drive drive) {
     m_pneumatics = pneumatics;
     m_pulley = pulley;
+    m_drive = drive;
     addRequirements(m_pneumatics, m_pulley);
   }
 
@@ -54,10 +57,14 @@ public class CubeThirdNode extends CommandBase {
         m_finished = true;
       }
     }
+    m_drive.tankDriveVolts(2, 2);
   }
 
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    SmartDashboard.putBoolean("Cube Third", false);
+    m_drive.stopMotors();
+  }
 
   @Override
   public boolean isFinished() {

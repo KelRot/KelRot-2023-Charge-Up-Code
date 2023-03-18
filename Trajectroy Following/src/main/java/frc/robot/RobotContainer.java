@@ -5,6 +5,10 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.AlignCommand;
 import frc.robot.commands.AutoScore;
 import frc.robot.commands.ChargingStation;
+import frc.robot.commands.ConeSecondNode;
+import frc.robot.commands.ConeThirdNode;
+import frc.robot.commands.CubeSecondNode;
+import frc.robot.commands.CubeThirdNode;
 import frc.robot.commands.CyclindersFullClose;
 import frc.robot.commands.CyclindersFullOpen;
 import frc.robot.commands.DriveCommand;
@@ -64,11 +68,14 @@ public class RobotContainer {
 
   private final OnePieceAutonomous m_onePieceAuto = new OnePieceAutonomous(m_drive, m_pneumatics, m_pulley);
   
-  private final AprilTagVision m_aprilTagVision = new AprilTagVision(VisionConstants.kUpperCamera);
+  private final AprilTagVision m_aprilTagVision = new AprilTagVision();
   
   private final LinearPathFollower m_linearPathFollower = new LinearPathFollower(m_drive);
 
-  
+  private final CubeThirdNode m_cubeThirdNode = new CubeThirdNode(m_pneumatics, m_pulley, m_drive);
+  private final CubeSecondNode m_cubeSecondNode = new CubeSecondNode(m_pneumatics, m_pulley);
+  private final ConeThirdNode m_coneThirdNode = new ConeThirdNode(m_pneumatics, m_pulley);
+  private final ConeSecondNode m_coneSecondNode = new ConeSecondNode(m_pneumatics, m_pulley);
   
 
   public LinearPathFollower startLinearPathFollower() {
@@ -110,25 +117,31 @@ public class RobotContainer {
     };
 
     JoystickButton byHand[] = {
-      new JoystickButton(m_helicopter, 8), //intake toogle
       new JoystickButton(m_helicopter, 10), //telescope toogle
       new JoystickButton(m_helicopter, 12), //arm toogle
       new JoystickButton(m_helicopter, 4), //pulley close
       new JoystickButton(m_helicopter, 6), //pulley open
-      new JoystickButton(m_helicopter, 7),
-      new JoystickButton(m_helicopter, 9)
+      new JoystickButton(m_helicopter, 2), // path follow
+      new JoystickButton(m_helicopter,2), // path cancel
+      new JoystickButton(m_helicopter, 11), // cube third
+      new JoystickButton(m_helicopter, 9), // cube second
+      new JoystickButton(m_helicopter, 7), // cone third
+      new JoystickButton(m_helicopter, 8), // cone second
     };
 
-    byHand[0].whileTrue(new InstantCommand(() -> m_pneumatics.getIntakeSolenoid().toggle()));
-    byHand[1].whileTrue(new InstantCommand(() -> m_pneumatics.getTelescopeSolenoid().toggle())); 
-    byHand[2].whileTrue(new InstantCommand(() -> m_pneumatics.getArmSolenoid().toggle()));
+    byHand[0].whileTrue(new InstantCommand(() -> m_pneumatics.getTelescopeSolenoid().toggle())); 
+    byHand[1].whileTrue(new InstantCommand(() -> m_pneumatics.getArmSolenoid().toggle()));
 
-    byHand[3].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
-    byHand[4].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
+    byHand[2].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
+    byHand[3].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
 
-    byHand[5].onTrue(m_aprilTagVision.hasTargets ? 
+    byHand[4].onTrue(m_aprilTagVision.hasTargets ? 
       startLinearPathFollower() : new InstantCommand(() -> SmartDashboard.putString("Error", "No targets found")));
-    byHand[6].onTrue(new InstantCommand (() -> m_linearPathFollower.cancel()));
+    byHand[5].onTrue(new InstantCommand (() -> m_linearPathFollower.cancel()));
+    byHand[6].onTrue(m_cubeThirdNode);
+    byHand[7].onTrue(m_cubeSecondNode);
+    byHand[8].onTrue(m_coneThirdNode);
+    byHand[9].onTrue(m_coneSecondNode);
 
     button[0].whileTrue(new InstantCommand(() -> m_pneumatics.toggleCompressor()));
     button[1].onTrue(m_fullOpenCommand);

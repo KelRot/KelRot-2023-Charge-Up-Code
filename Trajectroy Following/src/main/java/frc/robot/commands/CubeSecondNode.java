@@ -26,27 +26,26 @@ public class CubeSecondNode extends CommandBase {
 
     m_finished = false;
 
-    m_pulley.set(PulleyConstants.kArmOpenStateLength);
+    m_pulley.set(PulleyConstants.kCubeSecondStateLength);
 
     SmartDashboard.putBoolean("Cube Second", true);
   }
 
   @Override
   public void execute() {
-    if(m_pulley.getDistance() >= PulleyConstants.kArmOpenStateLength){
-      m_pneumatics.getArmSolenoid().open();
-      m_timer.start();
-    }
-    if(m_timer.get() >= 0.4){
+    if(m_pulley.getDistance() >= PulleyConstants.kCubeSecondStateLength - PulleyConstants.kTolerance * 2){
       m_pneumatics.getIntakeSolenoid().open();
-      m_pneumatics.getArmSolenoid().close();
+    }
+    if(m_pulley.getDistance() >= PulleyConstants.kCubeSecondStateLength){
       m_pulley.set(PulleyConstants.kFullCloseStateLength);
       m_finished = true;
     }
   }
 
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    SmartDashboard.putBoolean("Cube Second", false);
+  }
 
   @Override
   public boolean isFinished() {

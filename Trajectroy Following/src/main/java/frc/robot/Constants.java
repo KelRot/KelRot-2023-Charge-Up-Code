@@ -83,6 +83,7 @@ public final class Constants {
     public static final double kFullOpenStateLength = 2650.0;
     public static final double kOnGroundStateLength = 1350.0;
     public static final double kArmOpenStateLength = 250.0;
+    public static final double kCubeSecondStateLength = 1000.0;
     public static final double kTolerance = 50.0;
     public static final double kMomentumTolerance = 200.0;
 

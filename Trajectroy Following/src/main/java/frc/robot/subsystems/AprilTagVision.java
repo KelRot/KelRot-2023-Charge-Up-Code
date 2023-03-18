@@ -33,8 +33,8 @@ public class AprilTagVision extends SubsystemBase {
     private double poseAmbiguity;
     private Transform3d bestCameraToTarget;
 
-    public AprilTagVision(String cameraName) {
-        photonCamera = new PhotonCamera(cameraName);
+    public AprilTagVision() {
+        photonCamera = new PhotonCamera("apriltag");
 
         try {
             AprilTagFieldLayout fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
