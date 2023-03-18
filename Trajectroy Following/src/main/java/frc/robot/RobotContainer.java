@@ -12,6 +12,7 @@ import frc.robot.commands.CubeThirdNode;
 import frc.robot.commands.CyclindersFullClose;
 import frc.robot.commands.CyclindersFullOpen;
 import frc.robot.commands.DriveCommand;
+import frc.robot.commands.LinearPathFollower.DriveTask;
 import frc.robot.commands.OnePieceAutonomous;
 import frc.robot.commands.OnePieceChargingMobility;
 import frc.robot.commands.LinearPathFollower;
@@ -22,6 +23,8 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Pneumatics;
 import frc.robot.subsystems.Pulley;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -40,6 +43,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableEntry;
 
 public class RobotContainer {
   private final Drive m_drive = new Drive();
@@ -77,11 +81,24 @@ public class RobotContainer {
   private final ConeThirdNode m_coneThirdNode = new ConeThirdNode(m_pneumatics, m_pulley);
   private final ConeSecondNode m_coneSecondNode = new ConeSecondNode(m_pneumatics, m_pulley);
   
+  
 
-  public LinearPathFollower startLinearPathFollower() {
-    m_linearPathFollower.start(
+  public LinearPathFollower aprilTagFollower() {
+    m_linearPathFollower.scheduleAprilTag(
             new Pose2d(m_aprilTagVision.getPose().getX(), m_aprilTagVision.getPose().getY(), Rotation2d.fromDegrees(-m_aprilTagVision.getYaw())), 
             m_aprilTagVision.getId());
+    return m_linearPathFollower;
+  }
+
+  public LinearPathFollower driveTaskFollower(double distance, Pose2d pose) {
+    m_linearPathFollower.scheduleTask(
+        m_linearPathFollower.new DriveTask(distance, pose));
+    return m_linearPathFollower;
+  }
+
+  public LinearPathFollower rotationTaskFollower(double degrees) {
+    m_linearPathFollower.scheduleTask(
+        m_linearPathFollower.new RotationTask(degrees));
     return m_linearPathFollower;
   }
 
@@ -91,6 +108,11 @@ public class RobotContainer {
     
     SmartDashboard.putData("Charging Station Balance", new ChargingStation(m_drive));
     SmartDashboard.putData("AutoScore", new AutoScore(m_pneumatics, m_pulley));
+
+    SmartDashboard.putNumber("Drive Task X", 0.0);
+    SmartDashboard.putNumber("Drive Task Y", 0.0);
+    SmartDashboard.putNumber("Drive Task Distance", 0.0);
+    SmartDashboard.putNumber("Rotation Task Degrees", 0.0);
   }
 
   private void configureBindings() {
@@ -135,13 +157,15 @@ public class RobotContainer {
     byHand[2].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
     byHand[3].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
 
-    byHand[4].onTrue(m_aprilTagVision.hasTargets ? 
-      startLinearPathFollower() : new InstantCommand(() -> SmartDashboard.putString("Error", "No targets found")));
-    byHand[5].onTrue(new InstantCommand (() -> m_linearPathFollower.cancel()));
-    byHand[6].onTrue(m_cubeThirdNode);
-    byHand[7].onTrue(m_cubeSecondNode);
-    byHand[8].onTrue(m_coneThirdNode);
-    byHand[9].onTrue(m_coneSecondNode);
+    byHand[5].onTrue(m_aprilTagVision.hasTargets ? 
+      aprilTagFollower() : new InstantCommand(() -> SmartDashboard.putString("Error", "No targets found")));
+    byHand[6].onTrue(driveTaskFollower(SmartDashboard.getNumber("Drive Task Distance", 0.0),
+                                      new Pose2d(
+                                        SmartDashboard.getNumber("Drive Task X", 0.0), 
+                                        SmartDashboard.getNumber("Drive Task Y", 0.0),
+                                        Rotation2d.fromDegrees(m_drive.getAngle()))));
+    byHand[7].onTrue(rotationTaskFollower(SmartDashboard.getNumber("Rotation Task Degrees", 0.0)));
+    byHand[6].onTrue(new InstantCommand (() -> m_linearPathFollower.cancel()));
 
     button[0].whileTrue(new InstantCommand(() -> m_pneumatics.toggleCompressor()));
     button[1].onTrue(m_fullOpenCommand);

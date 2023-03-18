@@ -1,11 +1,17 @@
 package frc.robot.commands;
 
+import java.io.IOException;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.LinearPathConstants;
@@ -92,33 +98,32 @@ public class LinearPathFollower extends CommandBase {
         addRequirements(m_drive);
     }
 
-    public void start(Pose2d pose, int aprilTag) {
-        m_pose = pose;
-        m_aprilTag = aprilTag;
-        m_taskIterator = 0;
+    public void scheduleTask(Task task) {
+        clearTaskSchedule();
+        m_isFinished = false;
+        m_isStarted = true;
+        m_taskSchedule = new Task[] {task};
+    }
+
+    public void scheduleTask(Task[] task) {
+        clearTaskSchedule();
+        m_taskSchedule = task;
         m_isFinished = false;
         m_isStarted = true;
     }
 
-    public Translation2d getAprilTagTranslation(int aprilTag) {
-        switch(aprilTag) {
-            case 1: return LinearPathConstants.ID1;
-            case 2: return LinearPathConstants.ID2;
-            case 3: return LinearPathConstants.ID3;
-            case 4: return LinearPathConstants.ID4;
-            case 5: return LinearPathConstants.ID5;
-            case 6: return LinearPathConstants.ID6;
-            default:
-                return new Translation2d(0.0, 0.0);
-        }
-    }
-
-    @Override
-    public void initialize() {
-        if(m_isStarted) {
+    public void scheduleAprilTag(Pose2d pose, int aprilTag) {
+        clearTaskSchedule();
+        m_pose = pose;
+        m_aprilTag = aprilTag;
+        m_isFinished = false;
+        m_isStarted = true;
+        try {
+            AprilTagFieldLayout fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+            Pose3d m_aprilTagPose = fieldLayout.getTagPose(m_aprilTag).get();
             if (m_pose.getX() < LinearPathConstants.kFieldLeftUp.getX() && m_pose.getX() > LinearPathConstants.kFieldRightDown.getX() &&
                 m_pose.getY() < LinearPathConstants.kFieldLeftUp.getY() && m_pose.getY() > LinearPathConstants.kFieldRightDown.getY()) {
-                if(Math.abs(getAprilTagTranslation(m_aprilTag).getY() - m_pose.getY()) <= LinearPathConstants.kAlignTolerance) {
+                if(Math.abs(m_aprilTagPose.getY() - m_pose.getY()) <= LinearPathConstants.kAlignTolerance) {
                     // ACROSS
                     m_taskSchedule = new Task[] {
                         new RotationTask(m_pose.getRotation().getDegrees()),
@@ -134,7 +139,7 @@ public class LinearPathFollower extends CommandBase {
                         new DriveTask(m_pose.getX() - LinearPathConstants.kAprilTagDistance, m_pose)
                     };
                 }
-            } 
+            }
             else {
                 // OUTSIDE
                 m_taskSchedule = new Task[] {
@@ -146,19 +151,32 @@ public class LinearPathFollower extends CommandBase {
                     new DriveTask(LinearPathConstants.kFieldLeftUp.getX() - LinearPathConstants.kAprilTagDistance, m_pose)
                 };
             }
+        } catch (IOException e) {
+            DriverStation.reportError("Failed to load AprilTagFieldLayout", e.getStackTrace());
+            m_taskSchedule = new Task[] {};
         }
+    }
+
+    public void clearTaskSchedule() {
+        m_taskSchedule = new Task[] {};
         m_taskIterator = 0;
-        m_isFinished = false;
+    }
+
+    @Override
+    public void initialize() {
+        
     }
 
     @Override
     public void execute() {
-        m_taskSchedule[m_taskIterator].execute();
-        if(m_taskSchedule[m_taskIterator].isFinished) {
-            if(m_taskSchedule.length == m_taskIterator)
-                m_isFinished = true;
-            else
-                m_taskIterator++;
+        if(m_isStarted) {
+            m_taskSchedule[m_taskIterator].execute();
+            if(m_taskSchedule[m_taskIterator].isFinished) {
+                if(m_taskSchedule.length == m_taskIterator)
+                    m_isFinished = true;
+                else
+                    m_taskIterator++;
+            }
         }
     }
 
