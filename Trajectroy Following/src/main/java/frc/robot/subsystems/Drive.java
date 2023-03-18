@@ -87,7 +87,7 @@ public class Drive extends SubsystemBase {
 
     m_kinematics = new DifferentialDriveKinematics(TrajectoryConstants.kTrackwidthMeters);
 
-    m_poseEstimator = new DifferentialDrivePoseEstimator(m_kinematics, new Rotation2d().fromDegrees(getAngle()), 0.0, 0.0, new Pose2d());
+    m_poseEstimator = new DifferentialDrivePoseEstimator(m_kinematics, Rotation2d.fromDegrees(getAngle()), 0.0, 0.0, new Pose2d());
 
     m_leftEncoder = new Encoder(EncoderConstants.kLeftA, EncoderConstants.kLeftB);
     m_rightEncoder = new Encoder(EncoderConstants.kRightA, EncoderConstants.kRightB);

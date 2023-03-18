@@ -94,13 +94,6 @@ public final class Constants {
     public static final Translation2d kFieldLeftUp = new Translation2d(0.0, 0.0);
     public static final Translation2d kFieldRightDown = new Translation2d(0.0, 0.0);
 
-    public static final Translation2d ID1 = new Translation2d(0.0, 0.0);
-    public static final Translation2d ID2 = new Translation2d(0.0, 0.0);
-    public static final Translation2d ID3 = new Translation2d(0.0, 0.0);
-    public static final Translation2d ID4 = new Translation2d(0.0, 0.0);
-    public static final Translation2d ID5 = new Translation2d(0.0, 0.0);
-    public static final Translation2d ID6 = new Translation2d(0.0, 0.0);
-
     public static final double kAlignTolerance = 0.0;
     public static final double kAprilTagDistance = 0.0;
 
