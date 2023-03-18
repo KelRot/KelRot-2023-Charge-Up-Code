@@ -85,6 +85,9 @@ public class OnePieceAutonomous extends CommandBase {
       else {
         double volts = m_pid.calculate(m_drive.getAngle(), 0);
         m_drive.tankDriveVolts(volts, volts);
+        if(m_pid.atSetpoint()){
+          m_finished = true;
+        }
       }
     }
     
@@ -94,12 +97,12 @@ public class OnePieceAutonomous extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     SmartDashboard.putString("Charging State", "Finished");
-    
+    m_drive.setIdleModeBrake(true);
     m_drive.setGyroAxis(IMUAxis.kZ);
   }
 
   @Override
   public boolean isFinished() {
-    return false;
+    return m_finished;
   }
 }

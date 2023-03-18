@@ -58,7 +58,7 @@ public class ChargingStation extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     SmartDashboard.putString("Charging State", "Finished");
-    
+    m_drive.setMaxOutput(m_prevMaxOutput);
     m_drive.setGyroAxis(IMUAxis.kZ);
   }
 

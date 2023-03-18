@@ -32,11 +32,11 @@ public final class Constants {
     public static final double kRamseteB = 2;
     public static final double kRamseteZeta = 0.7;
 
-    public static final double ksVolts = 0.9102; // 0.67319
-    public static final double kvVoltSecondsPerMeter = 2.3049;
-    public static final double kaVoltSecondsSquaredPerMeter = 0.5; //1.3519
+    public static final double ksVolts = 0.66217; // 0.67319
+    public static final double kvVoltSecondsPerMeter = 2.6307;
+    public static final double kaVoltSecondsSquaredPerMeter = 1.3511; //1.3519
   
-    public static final double kPDriveVel = 0; // 0.70093
+    public static final double kPDriveVel = 0.19378; // 0.70093
   
     public static final double kTrackwidthMeters = 0.57;
 

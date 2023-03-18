@@ -6,13 +6,10 @@ package frc.robot.commands;
 
 import frc.robot.Constants.AlignConstants;
 import frc.robot.Constants.TrajectoryConstants;
-import frc.robot.paths.P;
 import frc.robot.subsystems.Align;
 import frc.robot.subsystems.Drive;
 
-import org.photonvision.PhotonCamera;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class AlignCommand extends CommandBase {
