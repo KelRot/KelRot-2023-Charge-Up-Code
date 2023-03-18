@@ -131,4 +131,10 @@ public final class Constants {
     static final double length = Units.feetToMeters(54);
     static final double width = Units.feetToMeters(27);
   }
+
+  public static class Turn180PID {
+    public static final double kP = 0.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+  }
 }

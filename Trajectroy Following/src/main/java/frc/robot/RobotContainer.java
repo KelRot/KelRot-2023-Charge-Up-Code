@@ -9,12 +9,11 @@ import frc.robot.commands.ConeSecondNode;
 import frc.robot.commands.ConeThirdNode;
 import frc.robot.commands.CubeSecondNode;
 import frc.robot.commands.CubeThirdNode;
-import frc.robot.commands.CyclindersFullClose;
-import frc.robot.commands.CyclindersFullOpen;
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.LinearPathFollower.DriveTask;
 import frc.robot.commands.OnePieceAutonomous;
 import frc.robot.commands.OnePieceChargingMobility;
+import frc.robot.commands.TwoPieceAutoA;
 import frc.robot.commands.LinearPathFollower;
 import frc.robot.paths.P;
 import frc.robot.subsystems.Align;
@@ -30,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.math.controller.PIDController;
@@ -59,8 +59,6 @@ public class RobotContainer {
   private final AlignCommand m_alignCommandCube = new AlignCommand(m_drive, m_vision, true);
   private final AlignCommand m_alignCommandCone = new AlignCommand(m_drive, m_vision, false);
 
-  private final CyclindersFullOpen m_fullOpenCommand = new CyclindersFullOpen(m_pneumatics, m_pulley);
-  private final CyclindersFullClose m_fullCloseCommand = new CyclindersFullClose(m_pneumatics, m_pulley);
 
   /* Auto commands */
 
@@ -81,7 +79,10 @@ public class RobotContainer {
   private final ConeThirdNode m_coneThirdNode = new ConeThirdNode(m_pneumatics, m_pulley);
   private final ConeSecondNode m_coneSecondNode = new ConeSecondNode(m_pneumatics, m_pulley);
   
-  
+  private final SequentialCommandGroup m_twoPieceAuto = new SequentialCommandGroup(
+    new TwoPieceAutoA(m_pneumatics, m_pulley, m_drive),
+    new AlignCommand(m_drive, m_vision, true)
+  );
 
   public LinearPathFollower aprilTagFollower() {
     m_linearPathFollower.scheduleAprilTag(
@@ -168,8 +169,6 @@ public class RobotContainer {
     byHand[6].onTrue(new InstantCommand (() -> m_linearPathFollower.cancel()));
 
     button[0].whileTrue(new InstantCommand(() -> m_pneumatics.toggleCompressor()));
-    button[1].onTrue(m_fullOpenCommand);
-    button[2].onTrue(m_fullCloseCommand);
     button[3].whileTrue(new InstantCommand(() -> m_pneumatics.getIntakeSolenoid().toggle()));
 
     /* speed */
@@ -190,6 +189,8 @@ public class RobotContainer {
 
     pov[1].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
     pov[2].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
+
+
     
   }
 
