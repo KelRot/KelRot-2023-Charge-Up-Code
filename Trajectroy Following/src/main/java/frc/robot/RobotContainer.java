@@ -13,6 +13,7 @@ import frc.robot.commands.DriveCommand;
 import frc.robot.commands.LinearPathFollower.DriveTask;
 import frc.robot.commands.OnePieceAutonomous;
 import frc.robot.commands.OnePieceChargingMobility;
+import frc.robot.commands.Turn180;
 import frc.robot.commands.TwoPieceAutoA;
 import frc.robot.commands.LinearPathFollower;
 import frc.robot.paths.P;
@@ -136,7 +137,8 @@ public class RobotContainer {
     POVButton pov[] = {
       new POVButton(m_joystick, 0), // pulley reset
       new POVButton(m_joystick, 180), // pulley open
-      new POVButton(m_joystick, 90) // pulley close
+      new POVButton(m_joystick, 90), // pulley close
+      new POVButton(m_joystick, 270) // turn 180
     };
 
     JoystickButton byHand[] = {
@@ -190,6 +192,7 @@ public class RobotContainer {
     pov[1].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
     pov[2].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
 
+    pov[3].onTrue(new Turn180(m_drive, m_pulley));
 
     
   }

@@ -1,8 +1,7 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
@@ -25,7 +24,7 @@ import edu.wpi.first.wpilibj.Joystick;
 
 
 public class Drive extends SubsystemBase {
-  private final CANSparkMax m_leftBackMotor, m_leftFrontMotor, m_rightBackMotor, m_rightFrontMotor;
+  private final WPI_VictorSPX m_leftBackMotor, m_leftFrontMotor, m_rightBackMotor, m_rightFrontMotor;
 
   private Encoder m_leftEncoder, m_rightEncoder;
 
@@ -46,15 +45,16 @@ public class Drive extends SubsystemBase {
   private boolean m_brake; // is brake mode
 
   /**
-  *Configures spark maxes: <p>
+  *Configures victor maxes: <p>
   *1: Restore factory defaults <p>
   *2: Invert <p>
   *3: Voltage compensations
-  *   @param spark the sparkmax motor controller to be configured.
+  *   @param victorspx the victor spx motor controller to be configured.
   */
-  public void configureSpark(CANSparkMax spark){
-    spark.restoreFactoryDefaults();
-    spark.enableVoltageCompensation(12.0);
+  public void configureVictor(WPI_VictorSPX victor){
+    victor.configFactoryDefault();
+    victor.configVoltageCompSaturation(11.0);
+    victor.enableVoltageCompensation(true);
   }
 
   public void configureEncoder(Encoder encoder, boolean isInverted){
@@ -64,15 +64,15 @@ public class Drive extends SubsystemBase {
   }
   
   public Drive() {
-    m_leftFrontMotor = new CANSparkMax(DriveConstants.kLeftFrontMotorPort, MotorType.kBrushed);
-    m_leftBackMotor = new CANSparkMax(DriveConstants.kLeftBackMotorPort, MotorType.kBrushed);
-    m_rightFrontMotor = new CANSparkMax(DriveConstants.kRightFrontMotorPort, MotorType.kBrushed);
-    m_rightBackMotor = new CANSparkMax(DriveConstants.kRightBackMotorPort, MotorType.kBrushed);
+    m_leftFrontMotor = new WPI_VictorSPX(DriveConstants.kLeftFrontMotorPort);
+    m_leftBackMotor = new WPI_VictorSPX(DriveConstants.kLeftBackMotorPort);
+    m_rightFrontMotor = new WPI_VictorSPX(DriveConstants.kRightFrontMotorPort);
+    m_rightBackMotor = new WPI_VictorSPX(DriveConstants.kRightBackMotorPort);
 
-    configureSpark(m_leftFrontMotor);
-    configureSpark(m_leftBackMotor);
-    configureSpark(m_rightFrontMotor);
-    configureSpark(m_rightBackMotor);
+    configureVictor(m_leftFrontMotor);
+    configureVictor(m_leftBackMotor);
+    configureVictor(m_rightFrontMotor);
+    configureVictor(m_rightBackMotor);
 
     m_leftMotorControllerGroup = new MotorControllerGroup(m_leftFrontMotor, m_leftBackMotor);
     m_rightMotorControllerGroup = new MotorControllerGroup(m_rightFrontMotor, m_rightBackMotor);
@@ -104,7 +104,7 @@ public class Drive extends SubsystemBase {
     );
 
     setNormalMode();
-    setSparkMode(IdleMode.kCoast);
+    setVictorMode(NeutralMode.Coast);
 
     m_brake = false;
 
@@ -139,39 +139,43 @@ public class Drive extends SubsystemBase {
   }
 
   public void setVoltageCompensation(double kVoltage) {
-    m_leftBackMotor.enableVoltageCompensation(kVoltage);
-    m_leftFrontMotor.enableVoltageCompensation(kVoltage);
-    m_rightFrontMotor.enableVoltageCompensation(kVoltage);
-    m_rightBackMotor.enableVoltageCompensation(kVoltage);
-  }
-
-  public double getMaxOutput() {
-    return m_leftFrontMotor.getVoltageCompensationNominalVoltage();
+    m_leftBackMotor.enableVoltageCompensation(false);
+    m_leftFrontMotor.enableVoltageCompensation(false);
+    m_rightFrontMotor.enableVoltageCompensation(false);
+    m_rightBackMotor.enableVoltageCompensation(false);
+    m_leftBackMotor.configVoltageCompSaturation(kVoltage);
+    m_leftFrontMotor.configVoltageCompSaturation(kVoltage);
+    m_rightFrontMotor.configVoltageCompSaturation(kVoltage);
+    m_rightBackMotor.configVoltageCompSaturation(kVoltage);
+    m_leftBackMotor.enableVoltageCompensation(true);
+    m_leftFrontMotor.enableVoltageCompensation(true);
+    m_rightFrontMotor.enableVoltageCompensation(true);
+    m_rightBackMotor.enableVoltageCompensation(true);
   }
 
   public void setIdleModeBrake(boolean brake){
     m_brake = brake;
     if(m_brake == false){
-      setSparkMode(IdleMode.kCoast);
+      setVictorMode(NeutralMode.Coast);
     }else{
-      setSparkMode(IdleMode.kBrake);
+      setVictorMode(NeutralMode.Brake);
     }
   }
 
   public void changeIdleMode(){
     m_brake = !m_brake;
     if(m_brake == false){
-      setSparkMode(IdleMode.kCoast);
+      setVictorMode(NeutralMode.Coast);
     }else{
-      setSparkMode(IdleMode.kBrake);
+      setVictorMode(NeutralMode.Brake);
     }
   }
 
-  public void setSparkMode(IdleMode mode){
-    m_leftBackMotor.setIdleMode(mode);
-    m_leftFrontMotor.setIdleMode(mode);
-    m_rightFrontMotor.setIdleMode(mode);
-    m_rightBackMotor.setIdleMode(mode);
+  public void setVictorMode(NeutralMode mode){
+    m_leftBackMotor.setNeutralMode(mode);
+    m_leftFrontMotor.setNeutralMode(mode);
+    m_rightFrontMotor.setNeutralMode(mode);
+    m_rightBackMotor.setNeutralMode(mode);
   }
 
   /* Encoder methods */

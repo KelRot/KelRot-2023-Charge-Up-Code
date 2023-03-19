@@ -44,7 +44,7 @@ public class LinearPathFollower extends CommandBase {
             m_pose = pose;
             m_endPose = new Pose2d(new Translation2d(m_pose.getX() + distance, m_pose.getY()), m_pose.getRotation());
 
-            m_line = new Path(m_pose, null, m_endPose, false);
+            m_line = new Path(m_pose, P.auto21.kWayPoints, m_endPose, false);
             m_lineFollower = P.generateRamsete(m_drive, m_line);
         }
 
