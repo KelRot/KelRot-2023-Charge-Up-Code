@@ -42,6 +42,8 @@ public class Drive extends SubsystemBase {
 
   public final Field2d m_field = new Field2d();
 
+  private double kMaxSpeed = 11.0;
+
   private boolean m_brake; // is brake mode
 
   /**
@@ -108,6 +110,8 @@ public class Drive extends SubsystemBase {
 
     m_brake = false;
 
+    kMaxSpeed = 11.0;
+
     debug();
   }
 
@@ -122,8 +126,7 @@ public class Drive extends SubsystemBase {
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
-    m_leftMotorControllerGroup.setVoltage(leftVolts);
-    m_rightMotorControllerGroup.setVoltage(rightVolts);
+    m_drive.tankDrive(leftVolts / kMaxSpeed, rightVolts / kMaxSpeed);
     
     feed();
   }
@@ -151,6 +154,7 @@ public class Drive extends SubsystemBase {
     m_leftFrontMotor.enableVoltageCompensation(true);
     m_rightFrontMotor.enableVoltageCompensation(true);
     m_rightBackMotor.enableVoltageCompensation(true);
+    kMaxSpeed = kVoltage;
   }
 
   public void setIdleModeBrake(boolean brake){

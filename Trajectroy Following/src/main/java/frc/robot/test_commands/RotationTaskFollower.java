@@ -33,31 +33,36 @@ public class RotationTaskFollower extends CommandBase {
         }
     }
 
-    public class RotationTask extends Task{
-        public boolean isFinished;   
+    public class RotationTask extends Task{  
         private final double m_degrees;
         private final double m_setPoint;
         private PIDController pid;   
 
         public RotationTask(double degrees) {
+            m_drive.resetOdometry();
             isFinished = false;
             m_degrees = degrees;
             m_setPoint = m_drive.getAngle() + m_degrees;
-            m_drive.resetOdometry();
             pid = new PIDController(LinearPathConstants.kP, LinearPathConstants.kI, LinearPathConstants.kD);
             pid.setTolerance(2.0);
+            pid.setSetpoint(m_setPoint);
+            SmartDashboard.putNumber("Rotation Set Point", m_setPoint);
+
         }
 
         public void execute() {
             var volts = pid.calculate(m_drive.getAngle(), m_setPoint);
             SmartDashboard.putNumber("Rotation Volts", volts);
+            SmartDashboard.putBoolean("Rotation Is Finished", isFinished);
             if(m_degrees < 0)
                 m_drive.tankDriveVolts(-volts, volts); 
             else
                 m_drive.tankDriveVolts(volts, -volts); 
 
-            if(pid.atSetpoint())
+            if(Math.abs(m_setPoint - m_drive.getAngle()) <= 2.0)
                 isFinished = true;
+            
+
         }
     }
 
@@ -74,6 +79,7 @@ public class RotationTaskFollower extends CommandBase {
     @Override
     public void initialize() {
         clearTaskSchedule();
+        m_drive.setNormalMode();
         double degrees = SmartDashboard.getNumber("Rotation Task Degrees", 0.0);
         SmartDashboard.putString("Rotation Task", "Initialized");
         m_taskSchedule = new Task[] { new RotationTask(degrees) };
@@ -87,10 +93,11 @@ public class RotationTaskFollower extends CommandBase {
             SmartDashboard.putString("Rotation Task", "Executing");
             m_taskSchedule[m_taskIterator].execute();
             SmartDashboard.putNumber("Rotation Task Iterator", m_taskIterator);
+            SmartDashboard.putNumber("Rotation Task Length", m_taskSchedule.length);
             if(m_taskSchedule[m_taskIterator].isFinished) {
-                if(m_taskSchedule.length == m_taskIterator)
+                if(m_taskSchedule.length - 1 == m_taskIterator)
                     m_isFinished = true;
-                else
+                else    
                     m_taskIterator++;
             }
         } else {

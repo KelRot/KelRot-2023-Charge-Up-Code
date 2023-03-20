@@ -16,7 +16,7 @@ public class DriveCommand extends CommandBase {
 
   @Override
   public void initialize() {
-    m_drive.resetOdometry();
+    
   }
 
   @Override

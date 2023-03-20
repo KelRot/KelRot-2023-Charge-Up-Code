@@ -104,6 +104,8 @@ public class RobotContainer {
     SmartDashboard.putNumber("Drive Task Y", 0.0);
     SmartDashboard.putNumber("Drive Task Distance", 0.0);
     SmartDashboard.putNumber("Rotation Task Degrees", 0.0);
+    SmartDashboard.putNumber("Drive Task P", 0.2);
+    SmartDashboard.putNumber("Drive Task D", 0.065);
   }
 
   private void configureBindings() {
@@ -127,7 +129,7 @@ public class RobotContainer {
       new POVButton(m_joystick, 0), // pulley reset
       new POVButton(m_joystick, 180), // pulley open
       new POVButton(m_joystick, 90), // pulley close
-      new POVButton(m_joystick, 270) // turn 180
+      new POVButton(m_joystick, 270), // turn 180
       new POVButton(m_joystick, 90), // pulley close
       new POVButton(m_helicopter, 0),
       new POVButton(m_helicopter, 90),
@@ -146,6 +148,8 @@ public class RobotContainer {
       new JoystickButton(m_helicopter, 9), // cube second
       new JoystickButton(m_helicopter, 7), // cone third
       new JoystickButton(m_helicopter, 8), // cone second
+      new JoystickButton(m_helicopter, 3),
+      new JoystickButton(m_helicopter, 5)
     };
 
     byHand[0].whileTrue(new InstantCommand(() -> m_pneumatics.getTelescopeSolenoid().toggle())); 
@@ -155,9 +159,9 @@ public class RobotContainer {
     byHand[3].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
 
     pov[3].onTrue(m_linearPathFollower);
-    pov[5].onTrue(m_driveTaskFollower);
-    byHand[5].whileTrue(m_rotationTaskFollower);
-    byHand[6].whileTrue(new InstantCommand (() -> m_rotationTaskFollower.cancel()));
+    pov[5].onTrue(m_rotationTaskFollower);
+    byHand[10].onTrue(m_driveTaskFollower);
+    byHand[11].onTrue(new InstantCommand (() -> m_driveTaskFollower.cancel()));
 
     button[0].whileTrue(new InstantCommand(() -> m_pneumatics.toggleCompressor()));
     button[3].whileTrue(new InstantCommand(() -> m_pneumatics.getIntakeSolenoid().toggle()));

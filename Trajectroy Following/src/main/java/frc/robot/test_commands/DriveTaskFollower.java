@@ -1,21 +1,13 @@
 package frc.robot.test_commands;
 
-import java.util.Arrays;
-
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.commands.LinearPathFollower;
-import frc.robot.paths.P;
-import frc.robot.paths.P.Path;
+import frc.robot.Constants.TrajectoryConstants;
 import frc.robot.subsystems.Drive;
 
 public class DriveTaskFollower extends CommandBase {
     private final Drive m_drive;
-    private Pose2d m_pose;
     private double m_distance;
     private Task[] m_taskSchedule;
     private boolean m_isStarted;
@@ -32,28 +24,31 @@ public class DriveTaskFollower extends CommandBase {
     }
 
     public class DriveTask extends Task{  
-        private final Command m_lineFollower;
-        private final Pose2d m_pose;
-        private final Pose2d m_endPose;
-        private final Translation2d m_wayPoint;
-        private final Path m_line;
+        private final PIDController m_pid;
+        private final double m_startDistance;
+        private final double m_setPoint;
 
-        public DriveTask(double distance, Pose2d pose) {
-            m_drive.resetOdometry();
-
+        public DriveTask(double distance) {
+            m_drive.resetOdometry(m_drive.getPose());
+            m_pid = new PIDController(SmartDashboard.getNumber("Drive Task P", 0.2) , 0.0, SmartDashboard.getNumber("Drive Task D", 0.065));
+            m_startDistance = m_drive.getAverageDistance();
+            m_setPoint = (m_startDistance + distance) * 100;
+            m_pid.setSetpoint(m_setPoint);
+            m_pid.setTolerance(2, 4);
+            
             isFinished = false;
-            m_pose = pose;
-            m_endPose = new Pose2d(new Translation2d(m_pose.getX() + distance, m_pose.getY()), m_pose.getRotation());
-            m_wayPoint = new Translation2d((m_pose.getX() + m_endPose.getX()) / 2, (m_pose.getY()));
-            m_line = new Path(m_pose, Arrays.asList(m_wayPoint), m_endPose, false);
-            m_lineFollower = P.generateRamsete(m_drive, m_line);
+            m_drive.setIdleModeBrake(true);
         }
 
         public void execute() {
-            m_lineFollower.execute();
-            if(m_lineFollower.isFinished()){
+            double volts = m_pid.calculate(m_drive.getAverageDistance() * 100) + TrajectoryConstants.ksVolts;
+            m_drive.tankDriveVolts(volts, volts);
+            
+            if(m_pid.atSetpoint()) {
                 isFinished = true;
+                m_drive.setIdleModeBrake(false);
             }
+            SmartDashboard.putBoolean("Drive Is Finished", isFinished);
         }
     }
 
@@ -70,12 +65,10 @@ public class DriveTaskFollower extends CommandBase {
     @Override
     public void initialize() {
         clearTaskSchedule();
-        m_pose = new Pose2d(
-            SmartDashboard.getNumber("Drive Task X", 0.0), 
-            SmartDashboard.getNumber("Drive Task Y", 0.0),
-            Rotation2d.fromDegrees(m_drive.getAngle()));
+
         m_distance = SmartDashboard.getNumber("Drive Task Distance", 1.0);
-        m_taskSchedule = new Task[] { new DriveTask(m_distance, m_pose) };
+        SmartDashboard.putString("Drive Task", "Initialized");
+        m_taskSchedule = new Task[] { new DriveTask(m_distance) };
         m_isFinished = false;
         m_isStarted = true;
     }
@@ -83,9 +76,10 @@ public class DriveTaskFollower extends CommandBase {
     @Override
     public void execute() {
         if(m_isStarted) {
+            SmartDashboard.putString("Drive Task", "Executing");
             m_taskSchedule[m_taskIterator].execute();
             if(m_taskSchedule[m_taskIterator].isFinished) {
-                if(m_taskSchedule.length == m_taskIterator)
+                if(m_taskSchedule.length - 1  == m_taskIterator)
                     m_isFinished = true;
                 else
                     m_taskIterator++;
@@ -97,6 +91,7 @@ public class DriveTaskFollower extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
+        SmartDashboard.putString("Drive Task", "Finished");
         m_isStarted = false;
     }
 
