@@ -83,6 +83,7 @@ public final class Constants {
     public static final double kFullOpenStateLength = 2650.0;
     public static final double kOnGroundStateLength = 1350.0;
     public static final double kArmOpenStateLength = 250.0;
+    public static final double kCubeSecondStateLength = 1000.0;
     public static final double kTolerance = 50.0;
     public static final double kMomentumTolerance = 200.0;
 
@@ -129,5 +130,11 @@ public final class Constants {
   static class FieldConstants {
     static final double length = Units.feetToMeters(54);
     static final double width = Units.feetToMeters(27);
+  }
+
+  public static class Turn180PID {
+    public static final double kP = 0.05;
+    public static final double kI = 0.0;
+    public static final double kD = 0.009;
   }
 }

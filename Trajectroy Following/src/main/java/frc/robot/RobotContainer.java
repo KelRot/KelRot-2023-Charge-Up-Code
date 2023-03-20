@@ -5,12 +5,16 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.AlignCommand;
 import frc.robot.commands.AutoScore;
 import frc.robot.commands.ChargingStation;
-import frc.robot.commands.CyclindersFullClose;
-import frc.robot.commands.CyclindersFullOpen;
+import frc.robot.commands.ConeSecondNode;
+import frc.robot.commands.ConeThirdNode;
+import frc.robot.commands.CubeSecondNode;
+import frc.robot.commands.CubeThirdNode;
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.LinearPathFollower.DriveTask;
 import frc.robot.commands.OnePieceAutonomous;
 import frc.robot.commands.OnePieceChargingMobility;
+import frc.robot.commands.Turn180;
+import frc.robot.commands.TwoPieceAutoA;
 import frc.robot.commands.LinearPathFollower;
 import frc.robot.paths.P;
 import frc.robot.subsystems.Align;
@@ -28,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 
@@ -60,8 +65,6 @@ public class RobotContainer {
   private final AlignCommand m_alignCommandCube = new AlignCommand(m_drive, m_vision, true);
   private final AlignCommand m_alignCommandCone = new AlignCommand(m_drive, m_vision, false);
 
-  private final CyclindersFullOpen m_fullOpenCommand = new CyclindersFullOpen(m_pneumatics, m_pulley);
-  private final CyclindersFullClose m_fullCloseCommand = new CyclindersFullClose(m_pneumatics, m_pulley);
 
   /* Auto commands */
 
@@ -73,8 +76,19 @@ public class RobotContainer {
 
   private final OnePieceAutonomous m_onePieceAuto = new OnePieceAutonomous(m_drive, m_pneumatics, m_pulley);
   
-  private final AprilTagVision m_aprilTagVision = new AprilTagVision(VisionConstants.kUpperCamera);
+  private final AprilTagVision m_aprilTagVision = new AprilTagVision();
+
+  private final CubeThirdNode m_cubeThirdNode = new CubeThirdNode(m_pneumatics, m_pulley, m_drive);
+  private final CubeSecondNode m_cubeSecondNode = new CubeSecondNode(m_pneumatics, m_pulley);
+  private final ConeThirdNode m_coneThirdNode = new ConeThirdNode(m_pneumatics, m_pulley);
+  private final ConeSecondNode m_coneSecondNode = new ConeSecondNode(m_pneumatics, m_pulley);
   
+  private final SequentialCommandGroup m_twoPieceAuto = new SequentialCommandGroup(
+    new TwoPieceAutoA(m_pneumatics, m_pulley, m_drive),
+    new AlignCommand(m_drive, m_vision, true)
+  );
+
+
   private final LinearPathFollower m_linearPathFollower = new LinearPathFollower(m_drive, m_aprilTagVision);
   private final DriveTaskFollower m_driveTaskFollower = new DriveTaskFollower(m_drive); 
   private final RotationTaskFollower m_rotationTaskFollower = new RotationTaskFollower(m_drive);
@@ -113,6 +127,8 @@ public class RobotContainer {
       new POVButton(m_joystick, 0), // pulley reset
       new POVButton(m_joystick, 180), // pulley open
       new POVButton(m_joystick, 90), // pulley close
+      new POVButton(m_joystick, 270) // turn 180
+      new POVButton(m_joystick, 90), // pulley close
       new POVButton(m_helicopter, 0),
       new POVButton(m_helicopter, 90),
       new POVButton(m_helicopter, 180),
@@ -120,21 +136,23 @@ public class RobotContainer {
     };
 
     JoystickButton byHand[] = {
-      new JoystickButton(m_helicopter, 8), //intake toogle
       new JoystickButton(m_helicopter, 10), //telescope toogle
       new JoystickButton(m_helicopter, 12), //arm toogle
       new JoystickButton(m_helicopter, 4), //pulley close
       new JoystickButton(m_helicopter, 6), //pulley open
-      new JoystickButton(m_helicopter, 7),
-      new JoystickButton(m_helicopter, 9)
+      new JoystickButton(m_helicopter, 2), // path follow
+      new JoystickButton(m_helicopter,2), // path cancel
+      new JoystickButton(m_helicopter, 11), // cube third
+      new JoystickButton(m_helicopter, 9), // cube second
+      new JoystickButton(m_helicopter, 7), // cone third
+      new JoystickButton(m_helicopter, 8), // cone second
     };
 
-    byHand[0].whileTrue(new InstantCommand(() -> m_pneumatics.getIntakeSolenoid().toggle()));
-    byHand[1].whileTrue(new InstantCommand(() -> m_pneumatics.getTelescopeSolenoid().toggle())); 
-    byHand[2].whileTrue(new InstantCommand(() -> m_pneumatics.getArmSolenoid().toggle()));
+    byHand[0].whileTrue(new InstantCommand(() -> m_pneumatics.getTelescopeSolenoid().toggle())); 
+    byHand[1].whileTrue(new InstantCommand(() -> m_pneumatics.getArmSolenoid().toggle()));
 
-    byHand[3].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
-    byHand[4].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
+    byHand[2].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
+    byHand[3].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
 
     pov[3].onTrue(m_linearPathFollower);
     pov[5].onTrue(m_driveTaskFollower);
@@ -142,8 +160,6 @@ public class RobotContainer {
     byHand[6].whileTrue(new InstantCommand (() -> m_rotationTaskFollower.cancel()));
 
     button[0].whileTrue(new InstantCommand(() -> m_pneumatics.toggleCompressor()));
-    button[1].onTrue(m_fullOpenCommand);
-    button[2].onTrue(m_fullCloseCommand);
     button[3].whileTrue(new InstantCommand(() -> m_pneumatics.getIntakeSolenoid().toggle()));
 
     /* speed */
@@ -164,6 +180,9 @@ public class RobotContainer {
 
     pov[1].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
     pov[2].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
+
+    pov[3].onTrue(new Turn180(m_drive, m_pulley));
+
     
   }
 

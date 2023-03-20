@@ -12,7 +12,6 @@ public class ChargingStation extends CommandBase {
   private final PIDController m_pid;
   private boolean m_isReached;
   private boolean m_finished;
-  private double m_prevMaxOutput;
 
   public ChargingStation(Drive drive) {
     m_drive = drive;
@@ -30,7 +29,6 @@ public class ChargingStation extends CommandBase {
   public void initialize() {
     SmartDashboard.putString("Charging State", "Initialized");
 
-    m_prevMaxOutput = m_drive.getMaxOutput();
     m_isReached = false;
     m_drive.setNormalMode();
     m_drive.setGyroAxis(IMUAxis.kY);
@@ -58,7 +56,6 @@ public class ChargingStation extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     SmartDashboard.putString("Charging State", "Finished");
-    m_drive.setMaxOutput(m_prevMaxOutput);
     m_drive.setGyroAxis(IMUAxis.kZ);
   }
 
