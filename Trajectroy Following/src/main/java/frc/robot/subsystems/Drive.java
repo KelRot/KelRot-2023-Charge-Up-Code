@@ -44,6 +44,8 @@ public class Drive extends SubsystemBase {
 
   private double kCompensation = 1.0;
 
+  private double kMaxSpeed = 11.0;
+
   private boolean m_brake; // is brake mode
 
   /**
@@ -110,6 +112,8 @@ public class Drive extends SubsystemBase {
 
     m_brake = false;
 
+    kMaxSpeed = 11.0;
+
     debug();
   }
 
@@ -128,7 +132,8 @@ public class Drive extends SubsystemBase {
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
-    m_drive.tankDrive(leftVolts / 12.0 * kCompensation, rightVolts / 12.0 * kCompensation);
+    m_drive.tankDrive(leftVolts / kMaxSpeed, rightVolts / kMaxSpeed);
+    
     feed();
   }
 
