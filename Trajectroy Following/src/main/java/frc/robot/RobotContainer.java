@@ -18,6 +18,8 @@ import frc.robot.subsystems.AprilTagVision;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Pneumatics;
 import frc.robot.subsystems.Pulley;
+import frc.robot.test_commands.DriveTaskFollower;
+import frc.robot.test_commands.RotationTaskFollower;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -28,6 +30,9 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+
+import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -70,29 +75,9 @@ public class RobotContainer {
   
   private final AprilTagVision m_aprilTagVision = new AprilTagVision(VisionConstants.kUpperCamera);
   
-  private final LinearPathFollower m_linearPathFollower = new LinearPathFollower(m_drive);
-
-  
-  
-
-  public LinearPathFollower aprilTagFollower() {
-    m_linearPathFollower.scheduleAprilTag(
-            new Pose2d(m_aprilTagVision.getPose().getX(), m_aprilTagVision.getPose().getY(), Rotation2d.fromDegrees(-m_aprilTagVision.getYaw())), 
-            m_aprilTagVision.getId());
-    return m_linearPathFollower;
-  }
-
-  public LinearPathFollower driveTaskFollower(double distance, Pose2d pose) {
-    m_linearPathFollower.scheduleTask(
-        m_linearPathFollower.new DriveTask(distance, pose));
-    return m_linearPathFollower;
-  }
-
-  public LinearPathFollower rotationTaskFollower(double degrees) {
-    m_linearPathFollower.scheduleTask(
-        m_linearPathFollower.new RotationTask(degrees));
-    return m_linearPathFollower;
-  }
+  private final LinearPathFollower m_linearPathFollower = new LinearPathFollower(m_drive, m_aprilTagVision);
+  private final DriveTaskFollower m_driveTaskFollower = new DriveTaskFollower(m_drive); 
+  private final RotationTaskFollower m_rotationTaskFollower = new RotationTaskFollower(m_drive);
 
   public RobotContainer() {
     PortForwarder.add(5800, "photonvision.local", 5800);
@@ -127,7 +112,11 @@ public class RobotContainer {
     POVButton pov[] = {
       new POVButton(m_joystick, 0), // pulley reset
       new POVButton(m_joystick, 180), // pulley open
-      new POVButton(m_joystick, 90) // pulley close
+      new POVButton(m_joystick, 90), // pulley close
+      new POVButton(m_helicopter, 0),
+      new POVButton(m_helicopter, 90),
+      new POVButton(m_helicopter, 180),
+      new POVButton(m_helicopter, 270),
     };
 
     JoystickButton byHand[] = {
@@ -147,15 +136,10 @@ public class RobotContainer {
     byHand[3].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
     byHand[4].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
 
-    byHand[5].onTrue(m_aprilTagVision.hasTargets ? 
-      aprilTagFollower() : new InstantCommand(() -> SmartDashboard.putString("Error", "No targets found")));
-    byHand[6].onTrue(driveTaskFollower(SmartDashboard.getNumber("Drive Task Distance", 0.0),
-                                      new Pose2d(
-                                        SmartDashboard.getNumber("Drive Task X", 0.0), 
-                                        SmartDashboard.getNumber("Drive Task Y", 0.0),
-                                        Rotation2d.fromDegrees(m_drive.getAngle()))));
-    byHand[7].onTrue(rotationTaskFollower(SmartDashboard.getNumber("Rotation Task Degrees", 0.0)));
-    byHand[6].onTrue(new InstantCommand (() -> m_linearPathFollower.cancel()));
+    pov[3].onTrue(m_linearPathFollower);
+    pov[5].onTrue(m_driveTaskFollower);
+    byHand[5].whileTrue(m_rotationTaskFollower);
+    byHand[6].whileTrue(new InstantCommand (() -> m_rotationTaskFollower.cancel()));
 
     button[0].whileTrue(new InstantCommand(() -> m_pneumatics.toggleCompressor()));
     button[1].onTrue(m_fullOpenCommand);
