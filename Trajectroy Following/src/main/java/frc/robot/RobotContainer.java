@@ -63,7 +63,7 @@ public class RobotContainer {
 
   /* Auto commands */
 
-  private final ChargingStation m_chargingStation = new ChargingStation(m_drive);
+  private final ChargingStation m_chargingStation = new ChargingStation(m_drive, m_pulley);
 
   private final AutoScore m_autoScore = new AutoScore(m_pneumatics, m_pulley);
   
@@ -108,7 +108,7 @@ public class RobotContainer {
     PortForwarder.add(5800, "photonvision.local", 5800);
     configureBindings();
     
-    SmartDashboard.putData("Charging Station Balance", new ChargingStation(m_drive));
+    SmartDashboard.putData("Charging Station Balance", new ChargingStation(m_drive, m_pulley));
     SmartDashboard.putData("AutoScore", new AutoScore(m_pneumatics, m_pulley));
 
     SmartDashboard.putNumber("Drive Task X", 0.0);
@@ -198,7 +198,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return P.generateRamsete(m_drive, P.straightLine);
+    return P.generateRamsete(m_drive, P.test);
     /*Trajectory autoTrajectory = TrajectoryGenerator.generateTrajectory(
       P.S.kStart,
 

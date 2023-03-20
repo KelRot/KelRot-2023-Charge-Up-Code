@@ -4,6 +4,7 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Align extends SubsystemBase{
@@ -49,5 +50,15 @@ public class Align extends SubsystemBase{
       return m_prevDistance = d;
     }
     return m_prevDistance;  
+  }
+
+  public void periodic(){
+    SmartDashboard.putNumber("Game Piece Distance", m_prevDistance);
+    SmartDashboard.putNumber("Game Piece Angle", m_prevAngle);
+    if(m_camera.getPipelineIndex() == 0)
+      SmartDashboard.putString("Game Piece", "Cube");
+    else
+      SmartDashboard.putString("Game Piece", "Cone");
+    
   }
 }

@@ -37,7 +37,7 @@ public class Pulley extends SubsystemBase {
 
 
   public void slowClosePulley(){
-    m_speed = 0.5;
+    m_speed = 0.1;
   }
 
   public void closePulley(){

@@ -17,7 +17,7 @@ public class TwoPieceAutoA extends CommandBase {
   private final Drive m_drive;
   private final PIDController m_pid;
   private final Timer m_timer = new Timer();
-  private boolean m_finished = false, m_closing, m_turned, m_turning;
+  private boolean m_finished = false, m_closing, m_turning;
   private double m_setPoint;
 
   public TwoPieceAutoA(Pneumatics pneumatics, Pulley pulley, Drive drive) {
@@ -59,7 +59,7 @@ public class TwoPieceAutoA extends CommandBase {
       }
       if(m_timer.get() >= 1.0){
         m_pneumatics.getIntakeSolenoid().open();
-      }
+      } 
       if(m_timer.get() >= 1.2){
         m_pneumatics.getTelescopeSolenoid().close();
         m_pulley.set(PulleyConstants.kOnGroundStateLength);

@@ -83,7 +83,17 @@ public class P {
     false 
   );
 
+  public static Path test = new Path(
+    new Pose2d(1.95, 1.09, Rotation2d.fromDegrees(0)), 
+    Arrays.asList(
+      new Translation2d(3, 1.09)
+    ),
+    new Pose2d(6.39, 1.09, Rotation2d.fromDegrees(0)),
+    false 
+  );
+
   public static Command generateRamsete(Drive m_drive, Path m_path){
+
     Trajectory autoTrajectory = TrajectoryGenerator.generateTrajectory(
       m_path.kStart,
 
@@ -95,6 +105,7 @@ public class P {
     );
 
     m_drive.m_field.getObject("traj").setTrajectory(autoTrajectory);
+
 
     RamseteController m_ramseteController = new RamseteController(TrajectoryConstants.kRamseteB, TrajectoryConstants.kRamseteZeta);
     

@@ -66,12 +66,12 @@ public final class Constants {
   }
 
   public static class ChargingConstants {
-    public static final double kP = 0.319;
-    public static final double kI = 0.0;
-    public static final double kD = 0.04;
+    public static final double kP = 0.180;
+    public static final double kI = 0.003;
+    public static final double kD = 0.011; // 0.016
 
-    public static final double kRequiredVoltage = -7.5; // required voltage to beat charging station
-    public static final double kRequiredVoltageBack = 6.5; // required voltage to beat charging station
+    public static final double kRequiredVoltage = -3; // required voltage to beat charging station
+    public static final double kRequiredVoltageBack = 3; // required voltage to beat charging station
     public static final double kRequiredAngle = 13.5;
   }
 

@@ -42,6 +42,8 @@ public class Drive extends SubsystemBase {
 
   public final Field2d m_field = new Field2d();
 
+  private double kCompensation = 1.0;
+
   private boolean m_brake; // is brake mode
 
   /**
@@ -53,7 +55,7 @@ public class Drive extends SubsystemBase {
   */
   public void configureVictor(WPI_VictorSPX victor){
     victor.configFactoryDefault();
-    victor.configVoltageCompSaturation(11.0);
+    victor.configVoltageCompSaturation(12.0);
     victor.enableVoltageCompensation(true);
   }
 
@@ -114,17 +116,19 @@ public class Drive extends SubsystemBase {
   /* Drive methods */
 
   public void drive(Joystick js) {
-    m_drive.curvatureDrive(-js.getRawAxis(1), js.getRawAxis(0) * 0.3, true);
+    m_drive.curvatureDrive(
+      -js.getRawAxis(1) * kCompensation, 
+      -js.getRawAxis(0) * 0.3 * kCompensation, 
+      true
+    );
   }
 
   public void curvatureDrive(double speed, double rot) {
-    m_drive.curvatureDrive(speed, rot, true);
+    m_drive.curvatureDrive(speed * kCompensation, rot * kCompensation, true);
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
-    m_leftMotorControllerGroup.setVoltage(leftVolts);
-    m_rightMotorControllerGroup.setVoltage(rightVolts);
-    
+    m_drive.tankDrive(leftVolts / 12.0 * kCompensation, rightVolts / 12.0 * kCompensation);
     feed();
   }
 
@@ -139,18 +143,7 @@ public class Drive extends SubsystemBase {
   }
 
   public void setVoltageCompensation(double kVoltage) {
-    m_leftBackMotor.enableVoltageCompensation(false);
-    m_leftFrontMotor.enableVoltageCompensation(false);
-    m_rightFrontMotor.enableVoltageCompensation(false);
-    m_rightBackMotor.enableVoltageCompensation(false);
-    m_leftBackMotor.configVoltageCompSaturation(kVoltage);
-    m_leftFrontMotor.configVoltageCompSaturation(kVoltage);
-    m_rightFrontMotor.configVoltageCompSaturation(kVoltage);
-    m_rightBackMotor.configVoltageCompSaturation(kVoltage);
-    m_leftBackMotor.enableVoltageCompensation(true);
-    m_leftFrontMotor.enableVoltageCompensation(true);
-    m_rightFrontMotor.enableVoltageCompensation(true);
-    m_rightBackMotor.enableVoltageCompensation(true);
+    kCompensation = kVoltage / 12.0;
   }
 
   public void setIdleModeBrake(boolean brake){
@@ -278,6 +271,9 @@ public class Drive extends SubsystemBase {
     );
     m_field.setRobotPose(m_odometry.getPoseMeters());
     debug();
+    SmartDashboard.putNumber("KmaxVoltage", kCompensation);
+    SmartDashboard.putNumber("Left voltage", m_leftBackMotor.getMotorOutputVoltage());
+    SmartDashboard.putNumber("Right voltage", m_rightBackMotor.getMotorOutputVoltage());
   }
 
   @Override
