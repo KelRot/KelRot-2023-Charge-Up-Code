@@ -43,7 +43,7 @@ public class RotationTaskFollower extends CommandBase {
             isFinished = false;
             m_degrees = degrees;
             m_setPoint = m_drive.getAngle() + m_degrees;
-            pid = new PIDController(LinearPathConstants.kP, LinearPathConstants.kI, LinearPathConstants.kD);
+            pid = new PIDController(SmartDashboard.getNumber("Rotation Task P", 0.3), LinearPathConstants.kI, SmartDashboard.getNumber("Rotation Task D", 0.05));
             pid.setTolerance(2.0);
             pid.setSetpoint(m_setPoint);
             SmartDashboard.putNumber("Rotation Set Point", m_setPoint);
@@ -92,8 +92,6 @@ public class RotationTaskFollower extends CommandBase {
         if(m_isStarted) {
             SmartDashboard.putString("Rotation Task", "Executing");
             m_taskSchedule[m_taskIterator].execute();
-            SmartDashboard.putNumber("Rotation Task Iterator", m_taskIterator);
-            SmartDashboard.putNumber("Rotation Task Length", m_taskSchedule.length);
             if(m_taskSchedule[m_taskIterator].isFinished) {
                 if(m_taskSchedule.length - 1 == m_taskIterator)
                     m_isFinished = true;

@@ -19,7 +19,10 @@ import frc.robot.subsystems.Drive;
 public class LinearPathFollower extends CommandBase {
     public class Task {
         public boolean isFinished;
+        public boolean isInitialize;
         public void execute() {}
+
+        public void initialize() {}
 
         public String debug() {
             return "";
@@ -37,17 +40,23 @@ public class LinearPathFollower extends CommandBase {
         private final double m_distance;
 
         public DriveTask(double distance) {
-            m_distance = distance;
-
             m_drive.resetOdometry(m_drive.getPose());
-            m_pid = new PIDController(SmartDashboard.getNumber("Drive Task P", 0.55) , 0.0, SmartDashboard.getNumber("Drive Task D", 0.065));
+            m_distance = distance;
+            m_pid = new PIDController(SmartDashboard.getNumber("Drive Task P", 0.6) , 0.0, SmartDashboard.getNumber("Drive Task D", 0.065));
+            SmartDashboard.putNumber("Distance", distance);
             m_startDistance = m_drive.getAverageDistance();
             m_setPoint = (m_startDistance + m_distance) * 100;
             m_pid.setSetpoint(m_setPoint);
             m_pid.setTolerance(2, 4);
             
             isFinished = false;
+            isInitialize = true;
             m_drive.setIdleModeBrake(true);
+        }
+
+        public void initialize() {
+            m_drive.resetOdometry(m_drive.getPose());
+            isInitialize = false;
         }
 
         public void execute() {
@@ -58,7 +67,13 @@ public class LinearPathFollower extends CommandBase {
                 isFinished = true;
                 m_drive.setIdleModeBrake(false);
             }
+            if(isFinished) {
+                end();
+            }
             SmartDashboard.putBoolean("Drive Is Finished", isFinished);
+        }
+
+        public void end() {
         }
 
         public String debug() {
@@ -73,26 +88,35 @@ public class LinearPathFollower extends CommandBase {
 
         public RotationTask(double degrees) {
             m_drive.resetOdometry();
-            isFinished = false;
             m_degrees = degrees;
             m_setPoint = m_drive.getAngle() + m_degrees;
-            pid = new PIDController(LinearPathConstants.kP, LinearPathConstants.kI, LinearPathConstants.kD);
-            pid.setTolerance(2.0);
+            pid = new PIDController(SmartDashboard.getNumber("Rotation Task P", 0.3), LinearPathConstants.kI, SmartDashboard.getNumber("Rotation Task D", 0.05));
+            pid.setTolerance(2.0, 3.0);
             pid.setSetpoint(m_setPoint);
-            SmartDashboard.putNumber("Rotation Set Point", m_setPoint);
+
+            isFinished = false;
+            isInitialize = true;
+        }
+
+        public void initialize() {
+            m_drive.resetOdometry();
+            isInitialize = false;
         }
 
         public void execute() {
             var volts = pid.calculate(m_drive.getAngle(), m_setPoint);
-            SmartDashboard.putNumber("Rotation Volts", volts);
             SmartDashboard.putBoolean("Rotation Is Finished", isFinished);
-            if(m_degrees < 0)
-                m_drive.tankDriveVolts(-volts, volts); 
-            else
-                m_drive.tankDriveVolts(volts, -volts); 
+            m_drive.tankDriveVolts(volts, -volts); 
 
-            if(Math.abs(m_setPoint - m_drive.getAngle()) <= 2.0)
+            if(pid.atSetpoint()) 
                 isFinished = true;
+            if(isFinished) {
+                end();
+            }
+            SmartDashboard.putBoolean("Rotation Is Finished", isFinished);
+        }
+
+        public void end() {
         }
 
         public String debug() {
@@ -125,11 +149,12 @@ public class LinearPathFollower extends CommandBase {
 
     @Override
     public void initialize() {
+        SmartDashboard.putString("Linear Path Follower Command", "Initialized");
         clearTaskSchedule();
         m_drive.setNormalMode();
         if(SmartDashboard.getBoolean("April Tag Path Follower", false)) {
             if(m_vision.hasTargets) {
-                m_pose = new Pose2d(m_vision.getPose().getX(), m_vision.getPose().getY(), Rotation2d.fromDegrees(-m_vision.getYaw()));
+                m_pose = new Pose2d(m_vision.getTagRelativePose().getX(), m_vision.getTagRelativePose().getY(), Rotation2d.fromDegrees(-m_vision.getTagRelativePose().getRotation().getAngle()));
                 m_aprilTag = m_vision.getId();
                 m_isFinished = false;
                 m_isStarted = true;
@@ -137,12 +162,13 @@ public class LinearPathFollower extends CommandBase {
                     AprilTagFieldLayout fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
                     Pose3d m_aprilTagPose = fieldLayout.getTagPose(m_aprilTag).get();
                     if (m_pose.getX() < LinearPathConstants.kFieldLeftUp.getX() && m_pose.getX() > LinearPathConstants.kFieldRightDown.getX() &&
-                        m_pose.getY() < LinearPathConstants.kFieldLeftUp.getY() && m_pose.getY() > LinearPathConstants.kFieldRightDown.getY()) {
+                        m_pose.getY() > LinearPathConstants.kFieldLeftUp.getY() && m_pose.getY() < LinearPathConstants.kFieldRightDown.getY()) {
                         if(Math.abs(m_aprilTagPose.getY() - m_pose.getY()) <= LinearPathConstants.kAlignTolerance) {
                             // ACROSS
+                            SmartDashboard.putBoolean("across", true);
                             m_taskSchedule = new Task[] {
                                 new RotationTask(m_pose.getRotation().getDegrees()),
-                                new DriveTask(m_pose.getX() - LinearPathConstants.kAprilTagDistance)
+                                new DriveTask(m_aprilTagPose.getX() - LinearPathConstants.kAprilTagDistance - m_pose.getX())
                             };
                         } else {
                             // INSIDE
@@ -171,18 +197,26 @@ public class LinearPathFollower extends CommandBase {
             }
         } else {
             m_taskSchedule = new Task[] {
-
+                new DriveTask(1)
             };
+            m_isFinished = false;
+            m_isStarted = true;
         }
     }
 
     @Override
     public void execute() {
         if(m_isStarted) {
-            m_taskSchedule[m_taskIterator].execute();
+            SmartDashboard.putString("Linear Path Follower Command", "Executing");
+            if(m_taskSchedule[m_taskIterator].isInitialize) {
+                m_taskSchedule[m_taskIterator].initialize();
+            } else {
+                m_taskSchedule[m_taskIterator].execute();
+            }
+            
             SmartDashboard.putString("Linear Path Follower", m_taskSchedule[m_taskIterator].debug());
             if(m_taskSchedule[m_taskIterator].isFinished) {
-                if(m_taskSchedule.length == m_taskIterator)
+                if(m_taskSchedule.length - 1 == m_taskIterator)
                     m_isFinished = true;
                 else
                     m_taskIterator++;
@@ -194,6 +228,7 @@ public class LinearPathFollower extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
+        SmartDashboard.putString("Linear Path Follower Command", "Finished");
         m_isStarted = false;
     }
 

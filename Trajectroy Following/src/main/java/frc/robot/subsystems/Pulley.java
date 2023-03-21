@@ -31,13 +31,16 @@ public class Pulley extends SubsystemBase {
     m_speed = -12.0;
   }
 
-  public void stopPulley(){
+  public void fixedPulley(){
+    m_speed = 0.1;
+  }
+
+  public void stopPulley() {
     m_speed = 0.0;
   }
 
-
   public void slowClosePulley(){
-    m_speed = 0.5;
+    m_speed = 0.25;
   }
 
   public void closePulley(){
