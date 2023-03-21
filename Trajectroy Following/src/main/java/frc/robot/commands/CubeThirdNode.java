@@ -59,7 +59,7 @@ public class CubeThirdNode extends CommandBase {
         m_finished = true;
       }
     }
-    m_drive.tankDriveVolts(2, 2);
+    m_drive.tankDriveVolts(1.2, 1.2);
   }
 
   @Override

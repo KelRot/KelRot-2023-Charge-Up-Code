@@ -121,11 +121,7 @@ public class RobotContainer {
       new POVButton(m_joystick, 180), // pulley open
       new POVButton(m_joystick, 90), // pulley close
       new POVButton(m_joystick, 270), // turn 180
-      new POVButton(m_joystick, 90), // pulley close
-      new POVButton(m_helicopter, 0),
-      new POVButton(m_helicopter, 90),
-      new POVButton(m_helicopter, 180),
-      new POVButton(m_helicopter, 270),
+      new POVButton(m_joystick, 90) // pulley close
     };
 
     JoystickButton byHand[] = {
