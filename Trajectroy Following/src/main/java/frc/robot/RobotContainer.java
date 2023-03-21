@@ -68,6 +68,8 @@ public class RobotContainer {
 
   /* Auto commands */
 
+  private final ChargingStation m_chargingStation = new ChargingStation(m_drive);
+
   private final ChargingStation m_chargingStation = new ChargingStation(m_drive, m_pulley);
 
   private final AutoScore m_autoScore = new AutoScore(m_pneumatics, m_pulley);
@@ -76,7 +78,7 @@ public class RobotContainer {
 
   private final OnePieceAutonomous m_onePieceAuto = new OnePieceAutonomous(m_drive, m_pneumatics, m_pulley);
   
-  private final AprilTagVision m_aprilTagVision = new AprilTagVision();
+  private final AprilTagVision m_aprilTagVision = new AprilTagVision(m_drive);
 
   private final CubeThirdNode m_cubeThirdNode = new CubeThirdNode(m_pneumatics, m_pulley, m_drive);
   private final CubeSecondNode m_cubeSecondNode = new CubeSecondNode(m_pneumatics, m_pulley);
@@ -88,7 +90,6 @@ public class RobotContainer {
     new AlignCommand(m_drive, m_vision, true)
   );
 
-
   private final LinearPathFollower m_linearPathFollower = new LinearPathFollower(m_drive, m_aprilTagVision);
   private final DriveTaskFollower m_driveTaskFollower = new DriveTaskFollower(m_drive); 
   private final RotationTaskFollower m_rotationTaskFollower = new RotationTaskFollower(m_drive);
@@ -97,15 +98,22 @@ public class RobotContainer {
     PortForwarder.add(5800, "photonvision.local", 5800);
     configureBindings();
     
+    SmartDashboard.putData("Charging Station Balance", new ChargingStation(m_drive));
+    SmartDashboard.putData("Cube Second", m_cubeSecondNode);
+    SmartDashboard.putData("Cube Third", m_cubeThirdNode);
+    SmartDashboard.putData("Cone Second", m_coneSecondNode);
+    SmartDashboard.putData("Cone Third", m_coneThirdNode);
     SmartDashboard.putData("Charging Station Balance", new ChargingStation(m_drive, m_pulley));
     SmartDashboard.putData("AutoScore", new AutoScore(m_pneumatics, m_pulley));
 
-    SmartDashboard.putNumber("Drive Task X", 0.0);
-    SmartDashboard.putNumber("Drive Task Y", 0.0);
     SmartDashboard.putNumber("Drive Task Distance", 0.0);
     SmartDashboard.putNumber("Rotation Task Degrees", 0.0);
-    SmartDashboard.putNumber("Drive Task P", 0.2);
-    SmartDashboard.putNumber("Drive Task D", 0.065);
+    SmartDashboard.putNumber("Drive Task P", 0.6);
+    SmartDashboard.putNumber("Drive Task D", 0.1);
+    SmartDashboard.putNumber("Rotation Task P", 0.3);
+    SmartDashboard.putNumber("Rotation Task D", 0.05);
+    SmartDashboard.putBoolean("April Tag Path Follower", false);
+
   }
 
   private void configureBindings() {
@@ -155,13 +163,17 @@ public class RobotContainer {
     byHand[0].whileTrue(new InstantCommand(() -> m_pneumatics.getTelescopeSolenoid().toggle())); 
     byHand[1].whileTrue(new InstantCommand(() -> m_pneumatics.getArmSolenoid().toggle()));
 
-    byHand[2].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
-    byHand[3].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.stopPulley()));
+    byHand[2].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.fixedPulley()));
+    byHand[3].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.fixedPulley()));
 
-    pov[3].onTrue(m_linearPathFollower);
+    pov[3].onTrue(m_driveTaskFollower);
     pov[5].onTrue(m_rotationTaskFollower);
-    byHand[10].onTrue(m_driveTaskFollower);
-    byHand[11].onTrue(new InstantCommand (() -> m_driveTaskFollower.cancel()));
+    byHand[6].onTrue(m_cubeThirdNode);
+    byHand[7].onTrue(m_cubeSecondNode);
+    byHand[8].onTrue(m_coneThirdNode);
+    byHand[9].onTrue(m_coneSecondNode);
+    byHand[10].onTrue(m_linearPathFollower);
+    byHand[11].onTrue(new InstantCommand (() -> m_linearPathFollower.cancel()));
 
     button[0].whileTrue(new InstantCommand(() -> m_pneumatics.toggleCompressor()));
     button[3].whileTrue(new InstantCommand(() -> m_pneumatics.getIntakeSolenoid().toggle()));

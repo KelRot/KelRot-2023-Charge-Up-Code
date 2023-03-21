@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.Map;
+
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
@@ -10,14 +12,21 @@ import frc.robot.Constants.TrajectoryConstants;
 import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
@@ -47,6 +56,10 @@ public class Drive extends SubsystemBase {
   private double kMaxSpeed = 11.0;
 
   private boolean m_brake; // is brake mode
+
+  private ShuffleboardTab m_driveTab; 
+  private GenericEntry m_poseXEntry;
+  private GenericEntry m_poseYEntry;
 
   /**
   *Configures victor maxes: <p>
@@ -113,6 +126,10 @@ public class Drive extends SubsystemBase {
     m_brake = false;
 
     kMaxSpeed = 11.0;
+
+    m_driveTab = Shuffleboard.getTab("Subsystems");
+    m_poseXEntry = m_driveTab.add("X", 0).getEntry();
+    m_poseYEntry = m_driveTab.add("Y", 0).getEntry();
 
     debug();
   }
@@ -255,6 +272,8 @@ public class Drive extends SubsystemBase {
 
   public void printPose(){
     var translation = m_odometry.getPoseMeters().getTranslation();
+    m_poseXEntry.setDouble(translation.getX());
+    m_poseYEntry.setDouble(translation.getY());
     SmartDashboard.putNumber("X", translation.getX());
     SmartDashboard.putNumber("Y", translation.getY());
   }
@@ -267,6 +286,10 @@ public class Drive extends SubsystemBase {
     printDistance();
   }
 
+  public void setRobotPose(Pose2d pose) {
+    m_field.setRobotPose(pose);
+  }
+
   @Override
   public void periodic() {
     m_odometry.update(
@@ -274,7 +297,7 @@ public class Drive extends SubsystemBase {
       getDistance()[0],
       getDistance()[1]
     );
-    m_field.setRobotPose(m_odometry.getPoseMeters());
+    //setRobotPose(m_odometry.getPoseMeters());
     debug();
     SmartDashboard.putNumber("KmaxVoltage", kCompensation);
     SmartDashboard.putNumber("Left voltage", m_leftBackMotor.getMotorOutputVoltage());

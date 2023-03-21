@@ -80,27 +80,29 @@ public final class Constants {
     public static final int kB = 2;
 
     public static final double kFullCloseStateLength = 0.0;
-    public static final double kFullOpenStateLength = 2650.0;
-    public static final double kOnGroundStateLength = 1350.0;
-    public static final double kArmOpenStateLength = 250.0;
-    public static final double kCubeSecondStateLength = 1000.0;
+    public static final double kFullOpenStateLength = 2600.0;
+    public static final double kOnGroundStateLength = 1366.0;
+    public static final double kArmOpenStateLength = 270.0;
+    public static final double kCubeSecondStateLength = 900.0;
     public static final double kTolerance = 50.0;
-    public static final double kMomentumTolerance = 200.0;
+    public static final double kMomentumTolerance = 0.0;
+
+    public static final double kConeTwoState = 300.0;
 
     public static final double kTime = 0.0;
     public static final double kTelescopeToIntake = 0.7;
   }
   
   public static class LinearPathConstants {
-    public static final Translation2d kFieldLeftUp = new Translation2d(0.0, 0.0);
-    public static final Translation2d kFieldRightDown = new Translation2d(0.0, 0.0);
+    public static final Translation2d kFieldLeftUp = new Translation2d(14.58, 0.49);
+    public static final Translation2d kFieldRightDown = new Translation2d(14.23, 4.87);
 
-    public static final double kAlignTolerance = 0.0;
-    public static final double kAprilTagDistance = 0.0;
+    public static final double kAlignTolerance = 0.2;
+    public static final double kAprilTagDistance = 0.91;
 
-    public static final double kP = 0.3;
+    public static final double kP = 0.6;
     public static final double kI = 0.0;
-    public static final double kD = 0.05;
+    public static final double kD = 0.1;
   }
 
   public static class AlignConstants {
@@ -118,7 +120,7 @@ public final class Constants {
   public static class VisionConstants {
     public static final Transform3d robotToCam =
             new Transform3d(
-                    new Translation3d(0.5, 0.0, 0.5),
+                    new Translation3d(-0.41, 0.0, -0.39),
                     new Rotation3d(
                             0, 0,
                             0)); // Cam mounted facing forward, half a meter forward of center, half a meter up

@@ -41,12 +41,14 @@ public class CubeThirdNode extends CommandBase {
       if(m_pulley.getDistance() >= PulleyConstants.kArmOpenStateLength){
         m_pneumatics.getArmSolenoid().open();
       }
-      if(m_pulley.getDistance() >= PulleyConstants.kFullOpenStateLength - PulleyConstants.kMomentumTolerance){
+      if(m_pulley.getDistance() >= PulleyConstants.kFullOpenStateLength - 200.0){
         m_pneumatics.getTelescopeSolenoid().open();
-        m_pneumatics.getIntakeSolenoid().open();
         m_timer.start();
       }
-      if(m_timer.get() >= 0.2){
+      if(m_timer.get() >= 0.1){
+        m_pneumatics.getIntakeSolenoid().open();
+      }
+      if(m_timer.get() >= 0.3){
         m_pneumatics.getTelescopeSolenoid().close();
         m_pulley.set(PulleyConstants.kFullCloseStateLength);
         m_closing = true;

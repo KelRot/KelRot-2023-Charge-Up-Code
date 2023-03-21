@@ -26,23 +26,27 @@ public class ConeSecondNode extends CommandBase {
 
     m_finished = false;
 
-    m_pulley.set(PulleyConstants.kArmOpenStateLength);
+    m_pulley.set(PulleyConstants.kConeTwoState);
 
     SmartDashboard.putBoolean("Cone Second", true);
   }
 
   @Override
   public void execute() {
-    if(m_pulley.getDistance() >= PulleyConstants.kArmOpenStateLength){
-      m_pneumatics.getArmSolenoid().open();
+    if(m_pulley.getDistance() >= PulleyConstants.kConeTwoState){
       m_timer.start();
+      m_pulley.stopPulley();
+      m_pneumatics.getArmSolenoid().open();
     }
-    if(m_timer.get() >= 3.0){
+    if(m_pulley.getDistance() >= 1200.0){
+      m_pulley.slowClosePulley();
+    }
+    if(m_timer.get() >= 0.8){
       m_pneumatics.getIntakeSolenoid().open();
-    }
-    if(m_timer.get() >= 3.3){
-      m_pneumatics.getArmSolenoid().close();
       m_pulley.set(PulleyConstants.kFullCloseStateLength);
+    }
+    if(m_timer.get() >= 1.1){
+      m_pneumatics.getArmSolenoid().close();
       m_finished = true;
     }
   }
