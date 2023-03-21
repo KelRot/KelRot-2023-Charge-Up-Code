@@ -22,10 +22,13 @@ public class AlignCommand extends CommandBase {
     m_piece = piece;
 
     m_angularPID = new PIDController(AlignConstants.kAngularP, AlignConstants.kAngularI, AlignConstants.kAngularD);
-    m_angularPID.setTolerance(AlignConstants.kAngularTolerance);
+    m_angularPID.setTolerance(AlignConstants.kAngularTolerance, 1.0);
+    m_angularPID.setSetpoint(0);
 
     m_linearPID = new PIDController(AlignConstants.kLinearP, AlignConstants.kLinearI, AlignConstants.kLinearD);
-    m_linearPID.setTolerance(AlignConstants.kLinearTolerance);
+    m_linearPID.setTolerance(AlignConstants.kLinearTolerance, 2.0);
+    m_linearPID.setSetpoint(0);
+
 
     addRequirements(m_drive, m_vision);
   }
@@ -33,6 +36,7 @@ public class AlignCommand extends CommandBase {
   
   public void initialize() {
     m_drive.stopMotors();
+    m_drive.setFastMode();
     m_aligned = m_finished = false;
     m_vision.changePipeline(m_piece);
   }
@@ -59,7 +63,9 @@ public class AlignCommand extends CommandBase {
   }
 
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    m_drive.setSlowMode();
+  }
 
   @Override
   public boolean isFinished() {

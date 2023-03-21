@@ -19,11 +19,6 @@ public class Turn180 extends CommandBase {
   public Turn180(Drive drive, Pulley pulley) {
     m_drive = drive;
     m_pulley = pulley;
-    //m_pid = new PIDController(Turn180PID.kP, Turn180PID.kI, Turn180PID.kD);
-    //m_pid.setTolerance(1.0);
-    SmartDashboard.putNumber("TurnKp", 0);
-    SmartDashboard.putNumber("TurnKi", 0);
-    SmartDashboard.putNumber("TurnKd", 0);
     addRequirements(drive);
   }
 
@@ -34,9 +29,8 @@ public class Turn180 extends CommandBase {
     double kd = SmartDashboard.getNumber("TurnKd", 0);
     m_pid = new PIDController(kp, ki, kd);
     m_pid.setTolerance(2.0, 5.0);
-    m_pid.setSetpoint(0);
+    m_pid.setSetpoint(180.0);
     m_drive.resetGyro();
-    m_setPoint = m_drive.getAngle() - 180.0;
     m_finished = false;
 
     m_timer.reset();
@@ -45,7 +39,7 @@ public class Turn180 extends CommandBase {
 
   @Override
   public void execute() {
-    double d = (m_drive.getAngle() - m_setPoint);
+    double d = (m_drive.getAngle());
     m_drive.curvatureDrive(0, m_pid.calculate(d));
     if(m_pid.atSetpoint()){
       m_finished = true;

@@ -8,6 +8,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -40,10 +41,12 @@ public class LinearPathFollower extends CommandBase {
         private final double m_distance;
 
         public DriveTask(double distance) {
-            m_drive.resetOdometry(m_drive.getPose());
+            //m_drive.resetOdometry(m_drive.getPose());
             m_distance = distance;
-            m_pid = new PIDController(SmartDashboard.getNumber("Drive Task P", 0.6) , 0.0, SmartDashboard.getNumber("Drive Task D", 0.065));
-            SmartDashboard.putNumber("Distance", distance);
+            m_pid = new PIDController(SmartDashboard.getNumber("Drive Task P", 0.6) , 0.0, SmartDashboard.getNumber("Drive Task D", 0.1));
+            
+            SmartDashboard.putNumber("Drive task d", distance);
+            
             m_startDistance = m_drive.getAverageDistance();
             m_setPoint = (m_startDistance + m_distance) * 100;
             m_pid.setSetpoint(m_setPoint);
@@ -87,7 +90,7 @@ public class LinearPathFollower extends CommandBase {
         private PIDController pid;   
 
         public RotationTask(double degrees) {
-            m_drive.resetOdometry();
+            //m_drive.resetOdometry();
             m_degrees = degrees;
             m_setPoint = m_drive.getAngle() + m_degrees;
             pid = new PIDController(SmartDashboard.getNumber("Rotation Task P", 0.3), LinearPathConstants.kI, SmartDashboard.getNumber("Rotation Task D", 0.05));
@@ -124,6 +127,12 @@ public class LinearPathFollower extends CommandBase {
         }
     }
 
+    public boolean isBetweenTwoPoints(Pose2d obj, Translation2d rightUp, Translation2d leftDown){
+        boolean isX = leftDown.getX() <= obj.getX() && obj.getX() <= rightUp.getX();
+        boolean isY = leftDown.getY() <= obj.getY() && obj.getY() <= rightUp.getY();
+        return (isX && isY);
+    }
+
     private final Drive m_drive;
     private final AprilTagVision m_vision;
     private Pose2d m_pose;
@@ -154,15 +163,19 @@ public class LinearPathFollower extends CommandBase {
         m_drive.setNormalMode();
         if(SmartDashboard.getBoolean("April Tag Path Follower", false)) {
             if(m_vision.hasTargets) {
-                m_pose = new Pose2d(m_vision.getTagRelativePose().getX(), m_vision.getTagRelativePose().getY(), Rotation2d.fromDegrees(-m_vision.getTagRelativePose().getRotation().getAngle()));
+                m_pose = new Pose2d(
+                    m_vision.getTagRelativePose().getX(),
+                    m_vision.getTagRelativePose().getY(), 
+                    Rotation2d.fromDegrees(-m_vision.getTagRelativePose().getRotation().getAngle())
+                );
+
                 m_aprilTag = m_vision.getId();
                 m_isFinished = false;
                 m_isStarted = true;
                 try {
                     AprilTagFieldLayout fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
                     Pose3d m_aprilTagPose = fieldLayout.getTagPose(m_aprilTag).get();
-                    if (m_pose.getX() < LinearPathConstants.kFieldLeftUp.getX() && m_pose.getX() > LinearPathConstants.kFieldRightDown.getX() &&
-                        m_pose.getY() > LinearPathConstants.kFieldLeftUp.getY() && m_pose.getY() < LinearPathConstants.kFieldRightDown.getY()) {
+                    if (isBetweenTwoPoints(m_pose, LinearPathConstants.kFieldLeftDown, LinearPathConstants.kFieldRightUp)) {
                         if(Math.abs(m_aprilTagPose.getY() - m_pose.getY()) <= LinearPathConstants.kAlignTolerance) {
                             // ACROSS
                             SmartDashboard.putBoolean("across", true);
@@ -172,22 +185,30 @@ public class LinearPathFollower extends CommandBase {
                             };
                         } else {
                             // INSIDE
+                            double r, alpha = m_pose.getRotation().getDegrees();
+                            if(m_pose.getY() > m_aprilTagPose.getY()){
+                                r = -90.0 - alpha;
+                            }else{
+                                r = 90.0 - alpha;
+                            }
+                            //may be reversed here
                             m_taskSchedule = new Task[] {
-                                new RotationTask(Math.atan(m_pose.getX() / m_pose.getY()) + m_pose.getRotation().getDegrees()),
-                                new DriveTask(m_pose.getY()),
-                                new RotationTask(m_pose.getY() < 0 ? -90 : 90),
-                                new DriveTask(m_pose.getX() - LinearPathConstants.kAprilTagDistance)
+                                //new RotationTask(Math.atan(m_pose.getX() / m_pose.getY()) + m_pose.getRotation().getDegrees()),
+                                new RotationTask(r),
+                                new DriveTask(m_pose.getY() - m_aprilTagPose.getY()), // may be reversed
+                                new RotationTask((m_pose.getY() > m_aprilTagPose.getY()) ? 90.0 : -90.0),
+                                new DriveTask(m_aprilTagPose.getX() - LinearPathConstants.kAprilTagDistance - m_pose.getX())
                             };
                         }
                     } else {
                         // OUTSIDE
                         m_taskSchedule = new Task[] {
-                            new RotationTask(-(90 - (Math.atan(m_pose.getX() / m_pose.getY()) + m_pose.getRotation().getDegrees()))),
-                            new DriveTask(m_pose.getX() - LinearPathConstants.kFieldLeftUp.getX()),
-                            new RotationTask(m_pose.getY() < 0 ? 90 : -90),
-                            new DriveTask(m_pose.getY()),
-                            new RotationTask(m_pose.getY() < 0 ? -90 : 90),
-                            new DriveTask(LinearPathConstants.kFieldLeftUp.getX() - LinearPathConstants.kAprilTagDistance)
+                            new RotationTask(m_pose.getRotation().getDegrees()),
+                            new DriveTask(LinearPathConstants.kFieldLeftDown.getX() - m_pose.getX() + 0.10),
+                            new RotationTask((m_pose.getY() > m_aprilTagPose.getY()) ? -90.0 : 90.0),
+                            new DriveTask(m_pose.getY() - m_aprilTagPose.getY()),
+                            new RotationTask((m_pose.getY() > m_aprilTagPose.getY()) ? 90.0 : -90.0),
+                            new DriveTask(m_aprilTagPose.getX() - (LinearPathConstants.kFieldLeftDown.getX() + 0.10))
                         };
                     }
                 } catch (IOException e) {
@@ -208,6 +229,10 @@ public class LinearPathFollower extends CommandBase {
     public void execute() {
         if(m_isStarted) {
             SmartDashboard.putString("Linear Path Follower Command", "Executing");
+            if(m_taskSchedule.length == 0){
+                m_isFinished = true;
+                return;
+            }
             if(m_taskSchedule[m_taskIterator].isInitialize) {
                 m_taskSchedule[m_taskIterator].initialize();
             } else {

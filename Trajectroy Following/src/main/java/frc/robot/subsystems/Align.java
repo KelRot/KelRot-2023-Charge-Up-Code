@@ -10,16 +10,20 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Align extends SubsystemBase{
   private final PhotonCamera m_camera = new PhotonCamera("gamepiece");
 
-  private final double camHeight = Units.inchesToMeters(0);
-  private final double targetHeight = Units.inchesToMeters(0);
-  private final double camPitch = Units.degreesToRadians(0);
-  private final double goalRange = Units.inchesToMeters(0);
+  private final double camHeight = 0.0;
+  private final double targetHeight = 0.10; // 10cm 
+  private final double camPitch = Units.degreesToRadians(0); // hesaplanacak
+  private final double goalRange = Units.inchesToMeters(0); 
 
   private double m_prevAngle, m_prevDistance;
 
+  private boolean m_hasTarget;
+
   //drive motors
 
-  public Align(){}
+  public Align(){
+    m_hasTarget = false;
+  }
 
   public void changePipeline(boolean is_cube){
     if(is_cube)
@@ -31,6 +35,7 @@ public class Align extends SubsystemBase{
   public double getAngle(){
     var result = m_camera.getLatestResult();
     if(result.hasTargets()){
+      m_hasTarget = true;
       return m_prevAngle = result.getBestTarget().getYaw();
     }
     return m_prevAngle;
@@ -39,17 +44,20 @@ public class Align extends SubsystemBase{
   public double getDistance(){
     var result = m_camera.getLatestResult();
     if(result.hasTargets()){
-
+      m_hasTarget = true;
       double d = PhotonUtils.calculateDistanceToTargetMeters(
         camHeight,
         targetHeight,
         camPitch,
         Units.degreesToRadians(result.getBestTarget().getPitch())
       );
-
-      return m_prevDistance = d;
+      m_prevDistance = d;
     }
     return m_prevDistance;  
+  }
+
+  public boolean hasFoundAnyTarget(){
+    return m_hasTarget;
   }
 
   public void periodic(){

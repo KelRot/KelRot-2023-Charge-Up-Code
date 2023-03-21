@@ -53,7 +53,7 @@ public class Drive extends SubsystemBase {
 
   private double kCompensation = 1.0;
 
-  private double kMaxSpeed = 11.0;
+  private double kMaxSpeed = 12.0;
 
   private boolean m_brake; // is brake mode
 
@@ -125,7 +125,8 @@ public class Drive extends SubsystemBase {
 
     m_brake = false;
 
-    kMaxSpeed = 11.0;
+    kMaxSpeed = 12.0;
+    setMaxOutput(kMaxSpeed);
 
     m_driveTab = Shuffleboard.getTab("Subsystems");
     m_poseXEntry = m_driveTab.add("X", 0).getEntry();
@@ -139,7 +140,7 @@ public class Drive extends SubsystemBase {
   public void drive(Joystick js) {
     m_drive.curvatureDrive(
       -js.getRawAxis(1) * kCompensation, 
-      -js.getRawAxis(0) * 0.3 * kCompensation, 
+      js.getRawAxis(0) * 0.5 * kCompensation, 
       true
     );
   }
@@ -161,7 +162,6 @@ public class Drive extends SubsystemBase {
 
   public void setMaxOutput(double kMaxSpeed){
     m_drive.setMaxOutput(kMaxSpeed);
-    
   }
 
   public void setVoltageCompensation(double kVoltage) {
@@ -204,8 +204,6 @@ public class Drive extends SubsystemBase {
   public void printDistance(){
     SmartDashboard.putNumber("Left encoder", getDistance()[0]);
     SmartDashboard.putNumber("Right encoder", getDistance()[1]);
-    SmartDashboard.putNumber("Left Velocity", m_leftEncoder.getRate());
-    SmartDashboard.putNumber("Right Velocity", m_rightEncoder.getRate());
     SmartDashboard.putData("Field", m_field);
   }
 
@@ -217,8 +215,6 @@ public class Drive extends SubsystemBase {
 
   public void setGyroAxis(IMUAxis yaw_axis) {m_gyro.setYawAxis(yaw_axis);}
 
-  public double getTurnRate() {return -m_gyro.getRate();}
-
   public void printAngle() {
     SmartDashboard.putNumber("Gyro Angle", -m_gyro.getAngle());
   }
@@ -229,9 +225,9 @@ public class Drive extends SubsystemBase {
     resetEncoders();
     resetGyro();
     m_odometry.resetPosition(
-      Rotation2d.fromDegrees(getAngle()),
-      getDistance()[0],
-      getDistance()[1],
+      Rotation2d.fromDegrees(0),
+      0,
+      0,
       new Pose2d()
     );
   }
@@ -240,9 +236,9 @@ public class Drive extends SubsystemBase {
     resetEncoders();
     resetGyro();
     m_odometry.resetPosition(
-      Rotation2d.fromDegrees(getAngle()),
-      getDistance()[0],
-      getDistance()[1],
+      Rotation2d.fromDegrees(0),
+      0,
+      0,
       pose
     );
   }

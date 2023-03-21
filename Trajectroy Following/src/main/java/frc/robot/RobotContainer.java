@@ -3,7 +3,6 @@ package frc.robot;
 import frc.robot.Constants.TrajectoryConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.AlignCommand;
-import frc.robot.commands.AutoScore;
 import frc.robot.commands.ChargingStation;
 import frc.robot.commands.ConeSecondNode;
 import frc.robot.commands.ConeThirdNode;
@@ -22,6 +21,7 @@ import frc.robot.subsystems.AprilTagVision;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Pneumatics;
 import frc.robot.subsystems.Pulley;
+import frc.robot.test_commands.AutoScore;
 import frc.robot.test_commands.DriveTaskFollower;
 import frc.robot.test_commands.RotationTaskFollower;
 import edu.wpi.first.wpilibj.Joystick;
@@ -36,20 +36,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 
-import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
-
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.RamseteController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.net.PortForwarder;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTableEntry;
 
 public class RobotContainer {
   private final Drive m_drive = new Drive();
@@ -68,12 +55,8 @@ public class RobotContainer {
 
   /* Auto commands */
 
-  private final ChargingStation m_chargingStation = new ChargingStation(m_drive);
-
   private final ChargingStation m_chargingStation = new ChargingStation(m_drive, m_pulley);
 
-  private final AutoScore m_autoScore = new AutoScore(m_pneumatics, m_pulley);
-  
   private final OnePieceChargingMobility m_onePieceC = new OnePieceChargingMobility(m_drive, m_pneumatics, m_pulley);
 
   private final OnePieceAutonomous m_onePieceAuto = new OnePieceAutonomous(m_drive, m_pneumatics, m_pulley);
@@ -98,7 +81,7 @@ public class RobotContainer {
     PortForwarder.add(5800, "photonvision.local", 5800);
     configureBindings();
     
-    SmartDashboard.putData("Charging Station Balance", new ChargingStation(m_drive));
+    SmartDashboard.putData("Charging Station Balance", new ChargingStation(m_drive, m_pulley));
     SmartDashboard.putData("Cube Second", m_cubeSecondNode);
     SmartDashboard.putData("Cube Third", m_cubeThirdNode);
     SmartDashboard.putData("Cone Second", m_coneSecondNode);
@@ -204,70 +187,6 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     return P.generateRamsete(m_drive, P.test);
-    /*Trajectory autoTrajectory = TrajectoryGenerator.generateTrajectory(
-      P.S.kStart,
-
-      P.S.kWayPoints,
-      
-      P.S.kEnd,
-
-      P.S.kConfig
-    );
-
-    m_drive.m_field.getObject("traj").setTrajectory(autoTrajectory);
-
-
-    RamseteController m_ramseteController = new RamseteController(TrajectoryConstants.kRamseteB, TrajectoryConstants.kRamseteZeta);
-    
-    
-
-    //m_ramseteController.setEnabled(false);
-
-    var table = NetworkTableInstance.getDefault().getTable("SmartDashboard");
-    var leftReference = table.getEntry("left_reference");
-    var leftMeasurement = table.getEntry("left_measurement");
-    var rightReference = table.getEntry("right_reference");
-    var rightMeasurement = table.getEntry("right_measurement");
-
-    var leftController = new PIDController(TrajectoryConstants.kPDriveVel, 0, 0);
-    var rightController = new PIDController(TrajectoryConstants.kPDriveVel, 0, 0);
-
-   
-
-    RamseteCommand m_ramsete = new RamseteCommand(
-      autoTrajectory,
-      m_drive::getPose,
-      m_ramseteController,
-      new SimpleMotorFeedforward(
-        TrajectoryConstants.ksVolts,
-        TrajectoryConstants.kvVoltSecondsPerMeter,
-        TrajectoryConstants.kaVoltSecondsSquaredPerMeter
-      ),
-      TrajectoryConstants.kDriveKinematics,
-      m_drive::getWheelSpeeds,
-      leftController,
-      rightController,
-      // RamseteCommand passes volts to the callback
-      (leftVolts, rightVolts) -> {
-        m_drive.tankDriveVolts(leftVolts, rightVolts);
-
-        SmartDashboard.putNumber("Tank Drive Left Volt", leftVolts);
-        SmartDashboard.putNumber("Tank Drive Right Volt", rightVolts);
-
-        leftMeasurement.setNumber(m_drive.getWheelSpeeds().leftMetersPerSecond);
-        leftReference.setNumber(leftController.getSetpoint());
-
-        rightMeasurement.setNumber(m_drive.getWheelSpeeds().rightMetersPerSecond);
-        rightReference.setNumber(rightController.getSetpoint());
-
-        m_drive.debug();
-      },
-      m_drive
-    );
-    
-    m_drive.resetOdometry(autoTrajectory.getInitialPose());
-
-    return m_ramsete.andThen(() -> m_drive.stopMotors());*/
   }
 
   public void testPeriodic() {

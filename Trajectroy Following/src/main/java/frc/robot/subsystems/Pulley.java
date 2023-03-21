@@ -14,8 +14,6 @@ public class Pulley extends SubsystemBase {
   private double m_speed, m_setPoint;
   private boolean m_isMoving;
 
-  // encoder is 0 at the full closed state
-  // encoder is max at the full open state
 
   public Pulley() {
     m_pgController = new PWMVictorSPX(0);
@@ -28,11 +26,11 @@ public class Pulley extends SubsystemBase {
   }
 
   public void openPulley(){
-    m_speed = -12.0;
+    m_speed = -1.0;
   }
 
   public void fixedPulley(){
-    m_speed = 0.1;
+    m_speed = 0.08;
   }
 
   public void stopPulley() {
@@ -44,7 +42,7 @@ public class Pulley extends SubsystemBase {
   }
 
   public void closePulley(){
-    m_speed = 12.0;
+    m_speed = 1.0;
   }
 
   public void set(double set_point){

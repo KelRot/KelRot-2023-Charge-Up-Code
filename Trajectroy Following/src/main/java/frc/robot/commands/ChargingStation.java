@@ -20,7 +20,8 @@ public class ChargingStation extends CommandBase {
     m_pulley = pulley;
 
     m_pid = new PIDController(ChargingConstants.kP, ChargingConstants.kI, ChargingConstants.kD);
-    m_pid.setTolerance(3, 3);
+    m_pid.setTolerance(5, 2.5);
+    m_pid.setSetpoint(0);
 
     m_finished = false;
     m_isReached = false;
@@ -50,7 +51,7 @@ public class ChargingStation extends CommandBase {
     SmartDashboard.putBoolean("Is Reached", m_isReached);
 
     if(m_isReached == false) {
-      m_drive.tankDriveVolts(ChargingConstants.kRequiredVoltageBack, ChargingConstants.kRequiredVoltageBack);
+      m_drive.tankDriveVolts(ChargingConstants.kRequiredVoltageBack, ChargingConstants.kRequiredVoltageBack); // goes forward
       if(Math.abs(m_drive.getAngle()) > ChargingConstants.kRequiredAngle)
         m_isReached = true;
     }

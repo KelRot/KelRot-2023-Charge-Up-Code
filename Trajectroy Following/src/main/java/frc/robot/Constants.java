@@ -1,5 +1,7 @@
 package frc.robot;
 
+import javax.sound.sampled.Line;
+
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -94,26 +96,30 @@ public final class Constants {
   }
   
   public static class LinearPathConstants {
-    public static final Translation2d kFieldLeftUp = new Translation2d(14.58, 0.49);
-    public static final Translation2d kFieldRightDown = new Translation2d(14.23, 4.87);
+    public static final Translation2d kFieldLeftDown = new Translation2d(14.00, 0.55);
+    public static final Translation2d kFieldRightUp = new Translation2d(14.54, 4.00);
 
-    public static final double kAlignTolerance = 0.2;
-    public static final double kAprilTagDistance = 0.91;
+    public static final double kAlignTolerance = 0.05;
+    public static final double kAprilTagDistance = 0.95;
 
     public static final double kP = 0.6;
     public static final double kI = 0.0;
     public static final double kD = 0.1;
+  
+    public static final double kRotP = 0.6;
+    public static final double kRotI = 0.0;
+    public static final double kRotD = 0.1;
   }
 
   public static class AlignConstants {
-    public static final double kAngularP = 0.0; // angular
-    public static final double kAngularI = 0.0;
-    public static final double kAngularD = 0.0;
+    public static final double kAngularP = LinearPathConstants.kRotP; // angular
+    public static final double kAngularI = LinearPathConstants.kRotI;
+    public static final double kAngularD = LinearPathConstants.kRotD;
     public static final double kAngularTolerance = 2.0; // deg
 
-    public static final double kLinearP = 0.0; // linear
-    public static final double kLinearI = 0.0;
-    public static final double kLinearD = 0.0;
+    public static final double kLinearP = LinearPathConstants.kP; // linear
+    public static final double kLinearI = LinearPathConstants.kI;
+    public static final double kLinearD = LinearPathConstants.kD;
     public static final double kLinearTolerance = 0.02; // m
   }
 
