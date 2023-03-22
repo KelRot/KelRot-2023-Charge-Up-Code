@@ -172,19 +172,22 @@ public class LinearPathFollower extends CommandBase {
                 m_aprilTag = m_vision.getId();
                 m_isFinished = false;
                 m_isStarted = true;
+                //SmartDashboard.putString("LPF Pos", "NONE");
                 try {
                     AprilTagFieldLayout fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
                     Pose3d m_aprilTagPose = fieldLayout.getTagPose(m_aprilTag).get();
                     if (isBetweenTwoPoints(m_pose, LinearPathConstants.kFieldLeftDown, LinearPathConstants.kFieldRightUp)) {
                         if(Math.abs(m_aprilTagPose.getY() - m_pose.getY()) <= LinearPathConstants.kAlignTolerance) {
+                  //          SmartDashboard.putString("LPF Pos", "ACROSS");
                             // ACROSS
-                            SmartDashboard.putBoolean("across", true);
+                    //        SmartDashboard.putBoolean("across", true);
                             m_taskSchedule = new Task[] {
                                 new RotationTask(m_pose.getRotation().getDegrees()),
                                 new DriveTask(m_aprilTagPose.getX() - LinearPathConstants.kAprilTagDistance - m_pose.getX())
                             };
                         } else {
                             // INSIDE
+                      //      SmartDashboard.putString("LPF Pos", "INSIDE");
                             double r, alpha = m_pose.getRotation().getDegrees();
                             if(m_pose.getY() > m_aprilTagPose.getY()){
                                 r = -90.0 - alpha;
@@ -202,6 +205,7 @@ public class LinearPathFollower extends CommandBase {
                         }
                     } else {
                         // OUTSIDE
+                       // SmartDashboard.putString("LPF Pos", "OUTSIDE");
                         m_taskSchedule = new Task[] {
                             new RotationTask(m_pose.getRotation().getDegrees()),
                             new DriveTask(LinearPathConstants.kFieldLeftDown.getX() - m_pose.getX() + 0.10),

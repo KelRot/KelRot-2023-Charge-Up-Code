@@ -51,8 +51,6 @@ public class Drive extends SubsystemBase {
 
   public final Field2d m_field = new Field2d();
 
-  private double kCompensation = 1.0;
-
   private double kMaxSpeed = 12.0;
 
   private boolean m_brake; // is brake mode
@@ -125,32 +123,31 @@ public class Drive extends SubsystemBase {
 
     m_brake = false;
 
-    kMaxSpeed = 12.0;
-    setMaxOutput(kMaxSpeed);
-
     m_driveTab = Shuffleboard.getTab("Subsystems");
     m_poseXEntry = m_driveTab.add("X", 0).getEntry();
     m_poseYEntry = m_driveTab.add("Y", 0).getEntry();
 
     debug();
+
+    m_drive.setDeadband(0.09);
   }
 
   /* Drive methods */
 
   public void drive(Joystick js) {
     m_drive.curvatureDrive(
-      -js.getRawAxis(1) * kCompensation, 
-      js.getRawAxis(0) * 0.5 * kCompensation, 
+      -js.getRawAxis(1), 
+      js.getRawAxis(0) * 0.5, 
       true
     );
   }
 
   public void curvatureDrive(double speed, double rot) {
-    m_drive.curvatureDrive(speed * kCompensation, rot * kCompensation, true);
+    m_drive.curvatureDrive(speed, rot, true);
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
-    m_drive.tankDrive(leftVolts / kMaxSpeed, rightVolts / kMaxSpeed);
+    m_drive.tankDrive(leftVolts, rightVolts);
     
     feed();
   }
@@ -160,12 +157,9 @@ public class Drive extends SubsystemBase {
 
   public void feed() {m_drive.feed();}
 
-  public void setMaxOutput(double kMaxSpeed){
-    m_drive.setMaxOutput(kMaxSpeed);
-  }
-
-  public void setVoltageCompensation(double kVoltage) {
-    kCompensation = kVoltage / 12.0;
+  public void setMaxOutput(double maxSpeed){
+    kMaxSpeed = maxSpeed;
+    m_drive.setMaxOutput(kMaxSpeed / 12.0);
   }
 
   public void setIdleModeBrake(boolean brake){
@@ -247,17 +241,14 @@ public class Drive extends SubsystemBase {
 
   public void setSlowMode() {
     setMaxOutput(4.0);
-    setVoltageCompensation(4.0);
   }
 
   public void setNormalMode() {
     setMaxOutput(8.0);
-    setVoltageCompensation(8.0);
   }
 
   public void setFastMode() {
     setMaxOutput(12.0);
-    setVoltageCompensation(12.0);
   }
 
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
@@ -295,7 +286,7 @@ public class Drive extends SubsystemBase {
     );
     //setRobotPose(m_odometry.getPoseMeters());
     debug();
-    SmartDashboard.putNumber("KmaxVoltage", kCompensation);
+    SmartDashboard.putNumber("Max speed", kMaxSpeed);
     SmartDashboard.putNumber("Left voltage", m_leftBackMotor.getMotorOutputVoltage());
     SmartDashboard.putNumber("Right voltage", m_rightBackMotor.getMotorOutputVoltage());
   }

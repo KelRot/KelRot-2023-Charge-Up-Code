@@ -145,8 +145,6 @@ public class RobotContainer {
     byHand[2].whileTrue(new InstantCommand(() -> m_pulley.openPulley())).whileFalse(new InstantCommand(() -> m_pulley.fixedPulley()));
     byHand[3].whileTrue(new InstantCommand(() -> m_pulley.closePulley())).whileFalse(new InstantCommand(() -> m_pulley.fixedPulley()));
 
-    pov[3].onTrue(m_driveTaskFollower);
-    pov[5].onTrue(m_rotationTaskFollower);
     byHand[6].onTrue(m_cubeThirdNode);
     byHand[7].onTrue(m_cubeSecondNode);
     byHand[8].onTrue(m_coneThirdNode);

@@ -19,9 +19,11 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.LinearPathConstants;
 import frc.robot.Constants.VisionConstants;
 
 public class AprilTagVision extends SubsystemBase {
@@ -130,6 +132,12 @@ public class AprilTagVision extends SubsystemBase {
             SmartDashboard.putString("Robot Pose", "X: " + robotPose.getX() + " Y: " + robotPose.getY());
         }
     }
+    public boolean isBetweenTwoPoints(Pose2d obj, Translation2d rightUp, Translation2d leftDown){
+        boolean isX = leftDown.getX() <= obj.getX() && obj.getX() <= rightUp.getX();
+        boolean isY = leftDown.getY() <= obj.getY() && obj.getY() <= rightUp.getY();
+        return (isX && isY);
+      }
+
 
     @Override
     public void periodic() {   
@@ -137,6 +145,34 @@ public class AprilTagVision extends SubsystemBase {
         Pose3d pose = getTagRelativePose();
         m_drive.setRobotPose(new Pose2d(pose.getX(), pose.getY(), Rotation2d.fromDegrees(pose.getRotation().getAngle())));
         debug();
+
+        Pose2d m_pose = new Pose2d(
+            getTagRelativePose().getX(),
+            getTagRelativePose().getY(), 
+            Rotation2d.fromDegrees(-getTagRelativePose().getRotation().getAngle())
+        );
+
+        int m_aprilTag = getId();
+        SmartDashboard.putString("LPF Pos", "NONE");
+        try {
+            AprilTagFieldLayout fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+            Pose3d m_aprilTagPose = fieldLayout.getTagPose(m_aprilTag).get();
+            if (isBetweenTwoPoints(m_pose, LinearPathConstants.kFieldLeftDown, LinearPathConstants.kFieldRightUp)) {
+                if(Math.abs(m_aprilTagPose.getY() - m_pose.getY()) <= LinearPathConstants.kAlignTolerance) {
+                    SmartDashboard.putString("LPF Pos", "ACROSS");
+                    // ACROSS
+                    SmartDashboard.putBoolean("across", true);
+                } else {
+                    // INSIDE
+                    SmartDashboard.putString("LPF Pos", "INSIDE");
+                }
+            } else {
+                // OUTSIDE
+                SmartDashboard.putString("LPF Pos", "OUTSIDE");
+            }
+        } catch (IOException e) {
+            DriverStation.reportError("Failed to load AprilTagFieldLayout", e.getStackTrace());
+        }
     }
     
 }
