@@ -16,14 +16,15 @@ import frc.robot.Constants.LinearPathConstants;
 public class Align extends SubsystemBase{
   private final PhotonCamera m_camera = new PhotonCamera("gamepiece");
 
-  private final double camHeight = 0.0;
-  private final double targetHeight = 0.10; // 10cm 
-  private final double camPitch = Units.degreesToRadians(0); // hesaplanacak
+  private final double camHeight = 1.19;
+  private final double targetHeight = 0.08; // 10cm 
+  private final double camPitch = Units.degreesToRadians(-23); // hesaplanacak
+  private final double intakeDistance = 1.10;
   private final double goalRange = Units.inchesToMeters(0); 
 
   private double m_prevAngle, m_prevDistance;
 
-  private boolean m_hasTarget;
+  private boolean m_hasTarget, m_isLatest;
 
   //drive motors
 
@@ -33,33 +34,33 @@ public class Align extends SubsystemBase{
 
   public void changePipeline(boolean is_cube){
     if(is_cube)
-      m_camera.setPipelineIndex(0);
-    else
       m_camera.setPipelineIndex(1);
+    else
+      m_camera.setPipelineIndex(0);
   }
 
   public double getAngle(){
     var result = m_camera.getLatestResult();
-    if(result.hasTargets()){
+    if(result.hasTargets() == true){
       m_hasTarget = true;
       return m_prevAngle = result.getBestTarget().getYaw();
     }
     return m_prevAngle;
   }
 
-  public double getDistance(){
+  public double getPitch(){
     var result = m_camera.getLatestResult();
-    if(result.hasTargets()){
+    if(result.hasTargets() == true){
       m_hasTarget = true;
-      double d = PhotonUtils.calculateDistanceToTargetMeters(
-        camHeight,
-        targetHeight,
-        camPitch,
-        Units.degreesToRadians(result.getBestTarget().getPitch())
-      );
+      double d = result.getBestTarget().getPitch();
       m_prevDistance = d;
     }
     return m_prevDistance;  
+  }
+
+  public boolean hasTarget(){
+    var result = m_camera.getLatestResult();
+    return result.hasTargets();
   }
 
   public boolean hasFoundAnyTarget(){
@@ -67,9 +68,9 @@ public class Align extends SubsystemBase{
   }
 
   public void periodic(){
-    SmartDashboard.putNumber("Game Piece Distance", m_prevDistance);
-    SmartDashboard.putNumber("Game Piece Angle", m_prevAngle);
-    if(m_camera.getPipelineIndex() == 0)
+    SmartDashboard.putNumber("Game Piece Angle", getAngle());
+    SmartDashboard.putNumber("Game Piece Pitch", getPitch());
+    if(m_camera.getPipelineIndex() == 1)
       SmartDashboard.putString("Game Piece", "Cube");
     else
       SmartDashboard.putString("Game Piece", "Cone");

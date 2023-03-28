@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.PIDDebugger;
 import frc.robot.Constants.LinearPathConstants;
 import frc.robot.Constants.TrajectoryConstants;
 import frc.robot.subsystems.AprilTagVision;
@@ -39,16 +40,18 @@ public class LinearPathFollower extends CommandBase {
         private final double m_startDistance;
         private final double m_setPoint;
         private final double m_distance;
+        private final PIDDebugger m_pidDebugger = new PIDDebugger();
 
         public DriveTask(double distance) {
             //m_drive.resetOdometry(m_drive.getPose());
             m_distance = distance;
-            m_pid = new PIDController(SmartDashboard.getNumber("Drive Task P", 0.6) , 0.0, SmartDashboard.getNumber("Drive Task D", 0.1));
             
+            m_pid = m_pidDebugger.getPIDControllerFromDashboard("Straight Drive");
+
             SmartDashboard.putNumber("Drive task d", distance);
             
             m_startDistance = m_drive.getAverageDistance();
-            m_setPoint = (m_startDistance + m_distance) * 100;
+            m_setPoint = (m_startDistance + m_distance);
             m_pid.setSetpoint(m_setPoint);
             m_pid.setTolerance(2, 4);
             
@@ -63,7 +66,7 @@ public class LinearPathFollower extends CommandBase {
         }
 
         public void execute() {
-            double volts = m_pid.calculate(m_drive.getAverageDistance() * 100) + TrajectoryConstants.ksVolts;
+            double volts = m_pid.calculate(m_drive.getAverageDistance());
             m_drive.tankDriveVolts(volts, volts);
             
             if(m_pid.atSetpoint()) {
@@ -93,7 +96,7 @@ public class LinearPathFollower extends CommandBase {
             //m_drive.resetOdometry();
             m_degrees = degrees;
             m_setPoint = m_drive.getAngle() + m_degrees;
-            pid = new PIDController(SmartDashboard.getNumber("Rotation Task P", 0.3), LinearPathConstants.kI, SmartDashboard.getNumber("Rotation Task D", 0.05));
+            pid = new PIDController(SmartDashboard.getNumber("Rotation Task P", 0.3), LinearPathConstants.kI, SmartDashboard.getNumber("Rotation Task D", 0.053));
             pid.setTolerance(2.0, 3.0);
             pid.setSetpoint(m_setPoint);
 
@@ -176,7 +179,7 @@ public class LinearPathFollower extends CommandBase {
                 try {
                     AprilTagFieldLayout fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
                     Pose3d m_aprilTagPose = fieldLayout.getTagPose(m_aprilTag).get();
-                    if (isBetweenTwoPoints(m_pose, LinearPathConstants.kFieldLeftDown, LinearPathConstants.kFieldRightUp)) {
+                    if (isBetweenTwoPoints(m_pose, LinearPathConstants.kFieldRightUp, LinearPathConstants.kFieldLeftDown)) {
                         if(Math.abs(m_aprilTagPose.getY() - m_pose.getY()) <= LinearPathConstants.kAlignTolerance) {
                   //          SmartDashboard.putString("LPF Pos", "ACROSS");
                             // ACROSS

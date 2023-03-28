@@ -4,6 +4,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.PIDDebugger;
 import frc.robot.Constants.ChargingConstants;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Pulley;
@@ -11,23 +12,21 @@ import frc.robot.subsystems.Pulley;
 public class ChargingStation extends CommandBase {
   private final Drive m_drive;
   private final Pulley m_pulley;
-  private final PIDController m_pid;
+  private PIDController m_pid;
+  private final PIDDebugger m_pidDebugger;
   private boolean m_isReached;
   private boolean m_finished;
 
   public ChargingStation(Drive drive, Pulley pulley) {
     m_drive = drive;
     m_pulley = pulley;
-
-    m_pid = new PIDController(ChargingConstants.kP, ChargingConstants.kI, ChargingConstants.kD);
-    m_pid.setTolerance(5, 2.5);
-    m_pid.setSetpoint(0);
-
+    m_pidDebugger = new PIDDebugger();
+    m_pid = new PIDController(0, 0, 0);
+    
     m_finished = false;
     m_isReached = false;
 
-    addRequirements(m_drive);
-    addRequirements(m_pulley);
+    addRequirements(m_drive, m_pulley);
 
   }
 
@@ -35,10 +34,14 @@ public class ChargingStation extends CommandBase {
   public void initialize() {
     SmartDashboard.putString("Charging State", "Initialized");
 
+    m_pid = m_pidDebugger.getPIDControllerFromDashboard("Charging");
+    m_pid.setTolerance(5, 3.0);
+    m_pid.setSetpoint(0);
+
+    m_finished = false;
     m_isReached = false;
     m_drive.setFastMode();
-    m_drive.setIdleModeBrake(true);
-    m_drive.setMaxOutput(8);
+    m_drive.setIdleModeBrake(false);
     m_drive.setGyroAxis(IMUAxis.kY);
     m_drive.resetGyro();
     m_pid.reset();
@@ -46,27 +49,36 @@ public class ChargingStation extends CommandBase {
 
   @Override
   public void execute() {
+    double volts;
     SmartDashboard.putString("Charging State", "Executing");
     
     SmartDashboard.putBoolean("Is Reached", m_isReached);
+    SmartDashboard.putBoolean("Charging At Setpoint", m_pid.atSetpoint());
 
     if(m_isReached == false) {
-      m_drive.tankDriveVolts(ChargingConstants.kRequiredVoltageBack, ChargingConstants.kRequiredVoltageBack); // goes forward
-      if(Math.abs(m_drive.getAngle()) > ChargingConstants.kRequiredAngle)
+      volts = -6.5;
+      if(Math.abs(m_drive.getAngle()) > ChargingConstants.kRequiredAngle) {
         m_isReached = true;
+        m_drive.setIdleModeBrake(true);
+      }
     }
     else {
-      double volts = -m_pid.calculate(m_drive.getAngle(), 0);
-      m_drive.tankDriveVolts(volts, volts);
+      volts = -m_pid.calculate(m_drive.getAngle(), 0);
     }
-    m_pulley.slowClosePulley();
+    if(m_pid.atSetpoint()) {
+      m_finished = true;
+      volts = 0.0;
+    }
 
+    m_pulley.fixedPulley();
+    m_drive.tankDriveVolts(volts, volts);
   }
 
   @Override
   public void end(boolean interrupted) {
     SmartDashboard.putString("Charging State", "Finished");
     m_drive.setGyroAxis(IMUAxis.kZ);
+    m_drive.stopMotors();
   }
 
   @Override

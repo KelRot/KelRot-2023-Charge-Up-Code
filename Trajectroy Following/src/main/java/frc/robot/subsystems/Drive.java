@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -68,8 +69,11 @@ public class Drive extends SubsystemBase {
   */
   public void configureVictor(WPI_VictorSPX victor){
     victor.configFactoryDefault();
+    /*
     victor.configVoltageCompSaturation(12.0);
-    victor.enableVoltageCompensation(true);
+    */
+    victor.enableVoltageCompensation(false);
+    
   }
 
   public void configureEncoder(Encoder encoder, boolean isInverted){
@@ -129,7 +133,7 @@ public class Drive extends SubsystemBase {
 
     debug();
 
-    m_drive.setDeadband(0.09);
+    m_drive.setDeadband(0.06);
   }
 
   /* Drive methods */
@@ -137,7 +141,7 @@ public class Drive extends SubsystemBase {
   public void drive(Joystick js) {
     m_drive.curvatureDrive(
       -js.getRawAxis(1), 
-      js.getRawAxis(0) * 0.5, 
+      -js.getRawAxis(0), 
       true
     );
   }
@@ -147,9 +151,12 @@ public class Drive extends SubsystemBase {
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
-    m_drive.tankDrive(leftVolts, rightVolts);
-    
-    feed();
+    //m_drive.tankDrive(leftVolts / 12.0, rightVolts / 12.0, false);
+    m_leftMotorControllerGroup.setVoltage(leftVolts * (100.0/103.9));
+    m_rightMotorControllerGroup.setVoltage(rightVolts);
+
+    m_drive.feed();
+    SmartDashboard.putNumber("PID Tank Drive", (leftVolts + rightVolts) / 2.0);
   }
 
   public void stopMotors() {m_drive.stopMotor();}
@@ -159,6 +166,16 @@ public class Drive extends SubsystemBase {
 
   public void setMaxOutput(double maxSpeed){
     kMaxSpeed = maxSpeed;
+    /*
+    m_leftFrontMotor.configVoltageCompSaturation(kMaxSpeed * (11.8/11.96));
+    m_leftFrontMotor.enableVoltageCompensation(true);
+    m_leftBackMotor.configVoltageCompSaturation(kMaxSpeed * (11.8/11.91));
+    m_leftBackMotor.enableVoltageCompensation(true);
+    m_rightFrontMotor.configVoltageCompSaturation(kMaxSpeed * (11.8/11.94));
+    m_rightFrontMotor.enableVoltageCompensation(true);
+    m_rightBackMotor.configVoltageCompSaturation(kMaxSpeed * (11.8/11.84));
+    m_rightBackMotor.enableVoltageCompensation(true);
+    */
     m_drive.setMaxOutput(kMaxSpeed / 12.0);
   }
 
@@ -240,11 +257,11 @@ public class Drive extends SubsystemBase {
   /* Speed modes */
 
   public void setSlowMode() {
-    setMaxOutput(4.0);
+    setMaxOutput(7.0);
   }
 
   public void setNormalMode() {
-    setMaxOutput(8.0);
+    setMaxOutput(10.0);
   }
 
   public void setFastMode() {
@@ -275,6 +292,13 @@ public class Drive extends SubsystemBase {
 
   public void setRobotPose(Pose2d pose) {
     m_field.setRobotPose(pose);
+  }
+
+  public PIDController getZN(double kU, double tU) {
+    double kP = 0.6 * kU;
+    double kI = (1.2 * kU) / tU;
+    double kD = 0.075 * kU * tU;
+    return new PIDController(kP, kI, kD);
   }
 
   @Override

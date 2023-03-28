@@ -133,7 +133,7 @@ public class AprilTagVision extends SubsystemBase {
         }
     }
     public boolean isBetweenTwoPoints(Pose2d obj, Translation2d rightUp, Translation2d leftDown){
-        boolean isX = leftDown.getX() <= obj.getX() && obj.getX() <= rightUp.getX();
+        boolean isX = leftDown.getX() >= obj.getX() && obj.getX() >= rightUp.getX();
         boolean isY = leftDown.getY() <= obj.getY() && obj.getY() <= rightUp.getY();
         return (isX && isY);
       }
@@ -143,36 +143,39 @@ public class AprilTagVision extends SubsystemBase {
     public void periodic() {   
         getLatestResult();
         Pose3d pose = getTagRelativePose();
-        m_drive.setRobotPose(new Pose2d(pose.getX(), pose.getY(), Rotation2d.fromDegrees(pose.getRotation().getAngle())));
-        debug();
+        if(!(pose.getX() == 0.0 && pose.getY() == 0.0 && pose.getZ() == 0.0)) {
+            m_drive.setRobotPose(new Pose2d(pose.getX(), pose.getY(), Rotation2d.fromDegrees(pose.getRotation().getAngle())));
+            debug();
 
-        Pose2d m_pose = new Pose2d(
-            getTagRelativePose().getX(),
-            getTagRelativePose().getY(), 
-            Rotation2d.fromDegrees(-getTagRelativePose().getRotation().getAngle())
-        );
+            Pose2d m_pose = new Pose2d(
+                getTagRelativePose().getX(),
+                getTagRelativePose().getY(), 
+                Rotation2d.fromDegrees(-getTagRelativePose().getRotation().getAngle())
+            );
 
-        int m_aprilTag = getId();
-        SmartDashboard.putString("LPF Pos", "NONE");
-        try {
-            AprilTagFieldLayout fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
-            Pose3d m_aprilTagPose = fieldLayout.getTagPose(m_aprilTag).get();
-            if (isBetweenTwoPoints(m_pose, LinearPathConstants.kFieldLeftDown, LinearPathConstants.kFieldRightUp)) {
-                if(Math.abs(m_aprilTagPose.getY() - m_pose.getY()) <= LinearPathConstants.kAlignTolerance) {
-                    SmartDashboard.putString("LPF Pos", "ACROSS");
-                    // ACROSS
-                    SmartDashboard.putBoolean("across", true);
+            int m_aprilTag = getId();
+            SmartDashboard.putString("Pose debug", "X: " + m_pose.getX() + " Y: " + m_pose.getY());
+            try {
+                AprilTagFieldLayout fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+                Pose3d m_aprilTagPose = fieldLayout.getTagPose(m_aprilTag).get();
+                if (isBetweenTwoPoints(m_pose, LinearPathConstants.kFieldRightUp, LinearPathConstants.kFieldLeftDown)) {
+                    if(Math.abs(m_aprilTagPose.getY() - m_pose.getY()) <= LinearPathConstants.kAlignTolerance) {
+                        SmartDashboard.putString("LPF Pos", "ACROSS");
+                        // ACROSS
+                        SmartDashboard.putBoolean("across", true);
+                    } else {
+                        // INSIDE
+                        SmartDashboard.putString("LPF Pos", "INSIDE");
+                    }
                 } else {
-                    // INSIDE
-                    SmartDashboard.putString("LPF Pos", "INSIDE");
+                    // OUTSIDE
+                    SmartDashboard.putString("LPF Pos", "OUTSIDE");
                 }
-            } else {
-                // OUTSIDE
-                SmartDashboard.putString("LPF Pos", "OUTSIDE");
+            } catch (IOException e) {
+                DriverStation.reportError("Failed to load AprilTagFieldLayout", e.getStackTrace());
             }
-        } catch (IOException e) {
-            DriverStation.reportError("Failed to load AprilTagFieldLayout", e.getStackTrace());
         }
+        m_drive.feed();
     }
     
 }

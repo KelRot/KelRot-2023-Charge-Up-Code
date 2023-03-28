@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -13,12 +14,14 @@ public class CubeThirdNode extends CommandBase {
   private final Pulley m_pulley;
   private final Timer m_timer = new Timer();
   private final Drive m_drive;
+  private final Joystick m_js;
   private boolean m_finished = false, m_closing;
 
-  public CubeThirdNode(Pneumatics pneumatics, Pulley pulley, Drive drive) {
+  public CubeThirdNode(Pneumatics pneumatics, Pulley pulley, Drive drive, Joystick js) {
     m_pneumatics = pneumatics;
     m_pulley = pulley;
     m_drive = drive;
+    m_js = js;
     addRequirements(m_pneumatics, m_pulley);
   }
 
@@ -38,28 +41,29 @@ public class CubeThirdNode extends CommandBase {
   @Override
   public void execute() {
     if(!m_closing){
-      if(m_pulley.getDistance() >= PulleyConstants.kArmOpenStateLength){
+      if(m_pulley.getDistance() >= PulleyConstants.kFullOpenStateLength - 1500.0){ //OKOKOKOKOKOKOK
         m_pneumatics.getArmSolenoid().open();
       }
-      if(m_pulley.getDistance() >= PulleyConstants.kFullOpenStateLength - 200.0){
+      if(m_pulley.getDistance() >= PulleyConstants.kFullOpenStateLength - 500.0){
         m_pneumatics.getTelescopeSolenoid().open();
         m_timer.start();
       }
-      if(m_timer.get() >= 0.1){
+      if(m_timer.get() >= 0.3){
         m_pneumatics.getIntakeSolenoid().open();
       }
-      if(m_timer.get() >= 0.3){
+      if(m_timer.get() >= 0.6){
         m_pneumatics.getTelescopeSolenoid().close();
         m_pulley.set(PulleyConstants.kFullCloseStateLength);
         m_closing = true;
       }
     }else{
-      if(m_pulley.getDistance() <= PulleyConstants.kOnGroundStateLength){
+      if(m_pulley.getDistance() <= 1200){//OKOKKOKOKOKOKOKO
         m_pneumatics.getArmSolenoid().close();
         m_finished = true;
       }
+      m_drive.drive(m_js);
     }
-    m_drive.tankDriveVolts(1.2, 1.2);
+    
   }
 
   @Override

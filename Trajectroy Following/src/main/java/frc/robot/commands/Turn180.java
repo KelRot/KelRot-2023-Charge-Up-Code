@@ -1,6 +1,8 @@
 package frc.robot.commands;
 
+import frc.robot.PIDDebugger;
 import frc.robot.Constants.Turn180PID;
+import frc.robot.paths.P;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Pulley;
 import edu.wpi.first.math.controller.PIDController;
@@ -12,6 +14,7 @@ public class Turn180 extends CommandBase {
   private final Drive m_drive;
   private final Pulley m_pulley;
   private PIDController m_pid;
+  private final PIDDebugger m_pidDebugger;
   private double m_setPoint;
   private boolean m_finished;
   private final Timer m_timer = new Timer();
@@ -19,38 +22,49 @@ public class Turn180 extends CommandBase {
   public Turn180(Drive drive, Pulley pulley) {
     m_drive = drive;
     m_pulley = pulley;
+    m_pidDebugger = new PIDDebugger();
     addRequirements(drive);
   }
 
   @Override
   public void initialize() {
-    double kp = SmartDashboard.getNumber("TurnKp", 0);
-    double ki = SmartDashboard.getNumber("TurnKi", 0);
-    double kd = SmartDashboard.getNumber("TurnKd", 0);
-    m_pid = new PIDController(kp, ki, kd);
+    m_drive.stopMotors();
+    m_drive.setIdleModeBrake(true);
+    m_drive.setFastMode();
+
+    m_pid = m_pidDebugger.getPIDControllerFromDashboard("Turn");
     m_pid.setTolerance(2.0, 5.0);
     m_pid.setSetpoint(180.0);
-    m_drive.resetGyro();
-    m_finished = false;
+
+    m_drive.resetOdometry(m_drive.getPose());
 
     m_timer.reset();
     m_timer.start();
+
+    m_finished = false;
   }
 
   @Override
   public void execute() {
-    double d = (m_drive.getAngle());
-    m_drive.curvatureDrive(0, m_pid.calculate(d));
+    double leftVolts, rightVolts;
+    rightVolts = m_pid.calculate(-m_drive.getAngle());
+    leftVolts = -rightVolts;
+
     if(m_pid.atSetpoint()){
       m_finished = true;
     }
+    
+    m_drive.tankDriveVolts(leftVolts, rightVolts);
     m_pulley.slowClosePulley();
-    SmartDashboard.putNumber("Turn 180 sec", m_timer.get());
-    SmartDashboard.putNumber("dist", d);
+
+    SmartDashboard.putBoolean("Turn 180 Is Finished", m_finished);
   }
 
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    m_drive.setNormalMode();
+    m_drive.setIdleModeBrake(false);
+  }
 
   @Override
   public boolean isFinished() {

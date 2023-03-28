@@ -11,7 +11,7 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Pneumatics;
 import frc.robot.subsystems.Pulley;
 
-public class OnePieceChargingMobility extends CommandBase {
+public class OnePiece18 extends CommandBase {
   private final Drive m_drive;
   private final Pneumatics m_pneumatics;
   private final Pulley m_pulley;
@@ -19,12 +19,12 @@ public class OnePieceChargingMobility extends CommandBase {
   private final Timer m_timer = new Timer(), m_autoTimer = new Timer();
   private boolean m_finished, m_closing, m_isReached, m_isPassedCS, m_gettingOff, m_climbing;
 
-  public OnePieceChargingMobility(Drive drive, Pneumatics pneumatics, Pulley pulley) {
+  public OnePiece18(Drive drive, Pneumatics pneumatics, Pulley pulley) {
     m_pneumatics = pneumatics;
     m_pulley = pulley;
     m_drive = drive;
 
-    m_pid = new PIDController(0.35, ChargingConstants.kI, 0.054);
+    m_pid = new PIDController(0.25, ChargingConstants.kI, 0.02);
     m_pid.setTolerance(6, 5);
 
     SmartDashboard.putString("One Piece Auto", "Not begun");
@@ -69,53 +69,27 @@ public class OnePieceChargingMobility extends CommandBase {
       if(m_timer.get() >= 0.6){
         m_pneumatics.getTelescopeSolenoid().close();
         m_pulley.set(PulleyConstants.kFullCloseStateLength);
-        m_closing = true;
       }
       m_drive.tankDriveVolts(0, 0);
+      if(m_timer.get() >= 3.0){
+        m_closing = true;
+      }
     }else{
       if(m_pulley.getDistance() <= 1200){//OKOKKOKOKOKOKOKO
         m_pneumatics.getArmSolenoid().close();
       }
-      if(m_isPassedCS == false){
+      if(m_isReached == false) {
         m_drive.setIdleModeBrake(true);
-        double chargingVolts = 6.0;
-        m_drive.tankDriveVolts(-chargingVolts, -chargingVolts);
-        if(Math.abs(m_drive.getAngle()) > 10){
-          m_climbing = true;
-          SmartDashboard.putString("One Piece Auto", "Climbing");
-        }
-        if(m_climbing == true){
-          if(Math.abs(m_drive.getAngle()) <= 1){
-            m_isReached = true;
-            SmartDashboard.putString("One Piece Auto", "On charging");
-          }
-        }
-        if(m_isReached == true){
-          if(Math.abs(m_drive.getAngle()) > 10){
-            m_gettingOff = true;
-            SmartDashboard.putString("One Piece Auto", "Getting off");
-          }
-        }
-        if(m_gettingOff == true){
-          if(Math.abs(m_drive.getAngle()) <= 1){
-            m_isPassedCS = true;
-            m_isReached = false;
-            SmartDashboard.putString("One Piece Auto", "Passed CS");
-          }
-        }
-      }else{
-        if(m_isReached == false) {
-          double chargingVolts = 7.8;
-          m_drive.tankDriveVolts(chargingVolts, chargingVolts);
-          if(Math.abs(m_drive.getAngle()) > 10)
-            m_isReached = true;
-        }
-        else {
-          double volts = -m_pid.calculate(m_drive.getAngle(), 0);
-          m_drive.tankDriveVolts(volts, volts);
-          if(m_pid.atSetpoint()){
-            m_finished = true;
-          }
+        double chargingVolts = -6.5;
+        m_drive.tankDriveVolts(chargingVolts, chargingVolts);
+        if(Math.abs(m_drive.getAngle()) > 13.5)
+          m_isReached = true;
+      }
+      else {
+        double volts = -m_pid.calculate(m_drive.getAngle(), 0);
+        m_drive.tankDriveVolts(volts, volts);
+        if(m_pid.atSetpoint()){
+          m_finished = true;
         }
       }
     }

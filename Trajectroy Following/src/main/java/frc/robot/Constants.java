@@ -68,12 +68,12 @@ public final class Constants {
   }
 
   public static class ChargingConstants {
-    public static final double kP = 0.180;
-    public static final double kI = 0.003;
-    public static final double kD = 0.011; // 0.016
+    public static final double kP = 0.25;
+    public static final double kI = 0.0;
+    public static final double kD = 0.024; // 0.016
 
-    public static final double kRequiredVoltage = -3; // required voltage to beat charging station
-    public static final double kRequiredVoltageBack = 3; // required voltage to beat charging station
+    public static final double kRequiredVoltage = -0.65; // required voltage to beat charging station
+    public static final double kRequiredVoltageBack = 0.65; // required voltage to beat charging station
     public static final double kRequiredAngle = 13.5;
   }
 
@@ -82,24 +82,24 @@ public final class Constants {
     public static final int kB = 2;
 
     public static final double kFullCloseStateLength = 0.0;
-    public static final double kFullOpenStateLength = 2600.0;
-    public static final double kOnGroundStateLength = 1366.0;
-    public static final double kArmOpenStateLength = 270.0;
-    public static final double kCubeSecondStateLength = 900.0;
+    public static final double kFullOpenStateLength = 3100.0;
+    public static final double kOnGroundStateLength = 1740.0;
+    public static final double kArmOpenStateLength = 1540.0;
+    public static final double kCubeSecondStateLength = 350.0;
     public static final double kTolerance = 50.0;
     public static final double kMomentumTolerance = 0.0;
 
-    public static final double kConeTwoState = 300.0;
+    public static final double kConeTwoState = 530.0;
 
     public static final double kTime = 0.0;
     public static final double kTelescopeToIntake = 0.7;
   }
   
   public static class LinearPathConstants {
-    public static final Translation2d kFieldLeftDown = new Translation2d(14.00, 0.55);
-    public static final Translation2d kFieldRightUp = new Translation2d(14.54, 4.00);
+    public static final Translation2d kFieldLeftDown = new Translation2d(14.60, 0.55);
+    public static final Translation2d kFieldRightUp = new Translation2d(14.05, 5.04);
 
-    public static final double kAlignTolerance = 0.05;
+    public static final double kAlignTolerance = 0.15;
     public static final double kAprilTagDistance = 0.95;
 
     public static final double kP = 0.6;
@@ -112,15 +112,15 @@ public final class Constants {
   }
 
   public static class AlignConstants {
-    public static final double kAngularP = LinearPathConstants.kRotP; // angular
-    public static final double kAngularI = LinearPathConstants.kRotI;
-    public static final double kAngularD = LinearPathConstants.kRotD;
+    public static final double kAngularP = 0.05; // angular
+    public static final double kAngularI = 0.0;
+    public static final double kAngularD = 0.0;
     public static final double kAngularTolerance = 2.0; // deg
 
     public static final double kLinearP = LinearPathConstants.kP; // linear
     public static final double kLinearI = LinearPathConstants.kI;
     public static final double kLinearD = LinearPathConstants.kD;
-    public static final double kLinearTolerance = 0.02; // m
+    public static final double kLinearTolerance = 0.06; // m
   }
 
   public static class VisionConstants {

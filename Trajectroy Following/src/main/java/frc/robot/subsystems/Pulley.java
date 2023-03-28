@@ -26,11 +26,11 @@ public class Pulley extends SubsystemBase {
   }
 
   public void openPulley(){
-    m_speed = -1.0;
+    m_speed = -12.0;
   }
 
   public void fixedPulley(){
-    m_speed = 0.05;
+    m_speed = 0.04;
   }
 
   public void stopPulley() {
@@ -42,7 +42,7 @@ public class Pulley extends SubsystemBase {
   }
 
   public void closePulley(){
-    m_speed = 1.0;
+    m_speed = 12.0;
   }
 
   public void set(double set_point){
@@ -70,7 +70,8 @@ public class Pulley extends SubsystemBase {
     if(m_isMoving){
       set(m_setPoint);
     }
-    m_pgController.set(m_speed);
+    m_pgController.setVoltage(13*m_speed);
+    m_pgController.feed();
   }
 
   public void reset(){

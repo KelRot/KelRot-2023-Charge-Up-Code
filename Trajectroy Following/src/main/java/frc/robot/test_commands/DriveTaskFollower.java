@@ -41,8 +41,8 @@ public class DriveTaskFollower extends CommandBase {
         }
 
         public void execute() {
-            double volts = m_pid.calculate(m_drive.getAverageDistance() * 100) + TrajectoryConstants.ksVolts;
-            m_drive.tankDriveVolts(volts, volts);
+            double volts = m_pid.calculate(m_drive.getAverageDistance() * 100);
+            m_drive.curvatureDrive(volts, 0.0);
             
             if(m_pid.atSetpoint()) {
                 isFinished = true;

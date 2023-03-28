@@ -98,6 +98,14 @@ public class Pneumatics extends SubsystemBase {
       m_compressor.enableDigital();
   }
 
+  public void disableCompressor() {
+    m_compressor.disable();
+  }
+
+  public void enableCompressor() {
+    m_compressor.enableDigital();
+  }
+
   @Override
   public void periodic() {
     dIntakeSolenoid.debug();
