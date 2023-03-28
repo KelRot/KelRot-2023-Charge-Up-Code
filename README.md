@@ -9,6 +9,10 @@ This code includes handling of mechanisms such as pneumatics with double solenoi
 To run this code, use ```git clone``` to clone the repo and open the project folder with WPILIB 2023. <br>
 You should install rev's vendor library in order to compile and deploy. ```https://software-metadata.revrobotics.com/REVLib-2023.json```
 
+This codebase is all public for everyone to learn, to teach, to try...
+
+If you have some questions to ask, you could reach us as you wish.
+
 ## Code Highlights
 
  - Automatic path generating based on april tags
