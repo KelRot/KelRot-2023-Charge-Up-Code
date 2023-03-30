@@ -22,3 +22,5 @@ If you have some questions to ask, you could reach us as you wish.
  - Automatic balance controller with PID
 
  - Customized pulley system with automatic loading
+
+![image](https://user-images.githubusercontent.com/85784378/228740162-7b365f89-53b8-43e2-b3ad-b89460f738c1.png)
